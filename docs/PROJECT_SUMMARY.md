@@ -1,27 +1,27 @@
 # DnD.CharSheet — current project summary
 
-Updated: 2026-10-20. State: planning; no application code implemented or tested.
+Updated: 2026-10-20. State: specification baseline completed; no application code implemented or tested.
 
-## Purpose
-Windows desktop character manager using PHB 2024; multiple characters, portraits, guided/existing character entry, character sheet, finder, battle assistance, resources and inventory. DM adjudicates hit/success. No Jira.
+## Purpose and confirmed scope
+Private-use Windows desktop character manager, strictly PHB 2024. Full classes/subclasses, species, backgrounds, feats, spells and equipment through levels 1–20, including multiclassing. Multiple characters, portraits, guided/existing entry, sheet/finder, battle assistance, inventory and resources. All additional P01–P07 features accepted: autosave/recovery, rests/conditions, advancement, casting resources, backup/restore, accessibility, currency/consumables and session history. DM adjudicates hit/success. No Jira.
 
-## Repository and document map
+## Confirmed stack and defaults
+C#/.NET + WPF/MVVM + SQLite; offline, local single-user operation. Windows 11 x64 default target. SDK/package versions and packaging format remain task 0.3 choices. Presentation/application/domain/infrastructure separation; live data under LocalApplicationData/DnD.CharSheet. External dice; labelled final-total input plus natural dice when required. PDF/private catalog excluded from GitHub. Other defaults are in specification section 2; they may be revised by owner instruction.
+
+## Repository and map
 Repository: https://github.com/il-mamo/dnd.charsheet
 Local checkout: C:\Users\markm\source\repos\dnd.charsheet
-- AGENTS.md: development workflow and context efficiency.
-- docs/AGENTS_ROLES.md: Coordinator, Developer, Graphics Designer, Tester.
-- docs/AGENT_ROLES.md: compatibility pointer for original placeholder name.
-- docs/TECHNICAL_SPEC.md: draft requirements, decision log and phased task queue.
+- AGENTS.md: workflow, targeted reading, clarification and summary maintenance.
+- docs/AGENTS_ROLES.md: Coordinator, Developer, Graphics Designer, independent Tester.
+- docs/TECHNICAL_SPEC.md: v1 requirements, phased roadmap, source map, bounded task contracts and release gates.
 
-## Verified current state
-Initial inspection found empty documentation placeholders and no application sources. DAImon's agent instructions informed the workflow; its Jira integration and project-specific requirements are excluded. No persistent agents or runtime orchestration have been installed. No handbook PDF was found in this checkout; uploaded project sources have not been accessible through the filesystem inspection.
+## Verified current state and source
+Initial repository had empty placeholders and no application sources. DAImon informed the workflow without its Jira requirements. No persistent agents/runtime orchestration installed.
+Supplied PDF accessible at: C:\Users\markm\Documents\Boys Play DnD\D&D [5e] [2024] - 01 - Players Handbook [Alt cover] [compressed].pdf
+388 pages; first-printing 2024 identification inspected. Targeted creation/advancement/multiclassing pages text-reviewed. Creation overview, ability-generation and multiclassing pages visually reviewed. Initial source map in spec section 9. OCR errors found, including numeric tables: visual verification required before implementation. No full handbook audit/catalog ingestion or rule implementation performed.
 
-## Confirmed decisions (2026-10-20)
-Full PHB 2024 classes, subclasses, species, backgrounds, feats, spells and equipment through levels 1–20. C#/.NET + WPF/MVVM + SQLite; local single-user offline operation. Private use only; keep handbook and extracted private catalog out of GitHub by default. Additional v1 scope P01–P07 remains proposed; multiclassing/optional rules need confirmation.
-
-## Active decisions and next steps
-Phase 0 only. Await an accessible handbook PDF path; full coverage, stack and private-use intent are confirmed. Confirm multiclassing and proposed essentials before final baseline. Next: resolve D1–D4 and create bounded 0.2/0.3 contracts. Do not start implementation while the baseline is unresolved.
+## Phase status and next work
+0.1 decisions: Verified. 0.2 initial creation source map: completed; complete catalog inventory remains. 0.3 architecture/toolchain/packaging contract: Ready for the next development request. Phases 1–9 not started. Schedule small content slices as their dependent features need them, never one whole handbook/class/spell implementation task. Application implementation was not part of this documentation request.
 
 ## Validation and limitations
-Documentation planning only; no application build/tests exist. Git inspection works with a command-scoped safe.directory setting; no global configuration changed. Git tracks docs as an empty file while the local docs path is a directory; reconcile this before committing. Documentation exists on disk but is not yet committed. No PHB rules have been verified or catalog content encoded. Summary must be revised after owner decisions and each verified implementation slice.
-
+Documentation and targeted source verification only; no app build/tests yet. Git inspection works with command-scoped safe.directory; no global config changed. Git currently tracks docs as an empty file while local docs is a directory; reconcile this before committing so documents are tracked. No commits or pushes made. User-facing rules and coverage must not be described as implemented.
