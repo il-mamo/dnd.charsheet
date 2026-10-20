@@ -15,8 +15,7 @@ public partial class MainWindow : Window
         InitializeComponent();
         var model = new ShellViewModel(initialize, library);
         DataContext = model;
-        Width = Math.Min(1280, SystemParameters.WorkArea.Width);
-        Height = Math.Min(720, SystemParameters.WorkArea.Height);
+
         Loaded += async (_, _) => await model.InitializeCommand.ExecuteAsync(null);
         var focusedName = false;
         model.PropertyChanged += (_, args) =>
@@ -54,6 +53,10 @@ public partial class MainWindow : Window
                 Focus();
         };
     }
+
+    private void MinimizeClicked(object sender, RoutedEventArgs e) => WindowState = WindowState.Minimized;
+
+    private void CloseClicked(object sender, RoutedEventArgs e) => Close();
 
     private void SwitchCharacterExecuted(object sender, ExecutedRoutedEventArgs e)
     {

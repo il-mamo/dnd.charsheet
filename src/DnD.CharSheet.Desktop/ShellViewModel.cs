@@ -27,7 +27,10 @@ public sealed partial class ShellViewModel : ObservableObject
     public string ActiveCharacterId => ActiveDraft is { } draft ? $"Character ID: {draft.Id}" : "";
     public string ActiveCharacterStatus => ActiveDraft is null ? "Activate a saved draft below." : "Incomplete draft";
     public string ActiveCharacterAnnouncement => $"{ActiveCharacterName}. {ActiveCharacterStatus}. {ActiveCharacterId}";
-    [ObservableProperty] private string databaseStatus = "Preparing local database…";
+    public bool ShowStartupStatus => IsInitializing || HasFailed;
+    partial void OnIsInitializingChanged(bool value) => OnPropertyChanged(nameof(ShowStartupStatus));
+    partial void OnHasFailedChanged(bool value) => OnPropertyChanged(nameof(ShowStartupStatus));
+    [ObservableProperty] private string databaseStatus = "Loading characters…";
     [ObservableProperty] private bool hasFailed;
     [ObservableProperty] private bool isInitializing = true;
     [ObservableProperty] private bool canCreate;
@@ -39,7 +42,7 @@ public sealed partial class ShellViewModel : ObservableObject
     [ObservableProperty] private string draftNameInput = "";
     [ObservableProperty] private string nameFeedback = "Use 1–80 characters. Duplicate names are allowed.";
     [ObservableProperty] private string creationStatus = "";
-    [ObservableProperty] private string libraryStatus = "Waiting for local database.";
+    [ObservableProperty] private string libraryStatus = "Loading characters…";
     private bool running;
     public ObservableCollection<CharacterDraft> Drafts { get; } = [];
 
@@ -66,18 +69,18 @@ public sealed partial class ShellViewModel : ObservableObject
         CanRetryLibrary = false;
         HasFailed = false;
         IsInitializing = true;
-        DatabaseStatus = "Preparing local database…";
-        LibraryStatus = "Waiting for local database.";
+        DatabaseStatus = "Loading characters…";
+        LibraryStatus = "Loading characters…";
         try
         {
             await initialize();
-            DatabaseStatus = "Local database ready.";
+            DatabaseStatus = "";
             await LoadLibraryAsync();
         }
         catch (Exception)
         {
-            DatabaseStatus = "Local database could not be initialized.";
-            LibraryStatus = "Library unavailable until the local database is ready.";
+            DatabaseStatus = "Characters could not be loaded. Retry.";
+            LibraryStatus = "Characters unavailable.";
             HasFailed = true;
         }
         finally
@@ -97,7 +100,7 @@ public sealed partial class ShellViewModel : ObservableObject
             var drafts = await library.ListAsync();
             Drafts.Clear();
             foreach (var draft in drafts) Drafts.Add(draft);
-            LibraryStatus = Drafts.Count == 0 ? "No saved characters yet. Create your first draft above." : $"{Drafts.Count} saved incomplete drafts.";
+            LibraryStatus = Drafts.Count == 0 ? "No characters" : $"{Drafts.Count} saved incomplete drafts.";
             CanCreate = true;
         }
         catch (Exception)
@@ -129,7 +132,7 @@ public sealed partial class ShellViewModel : ObservableObject
             NameFeedback = "Use 1–80 characters. Duplicate names are allowed.";
             CanCreate = false;
             IsCreating = true;
-            CreationStatus = "Creating draft…";
+            CreationStatus = "Saving draft…";
             try
             {
                 var saved = await library.CreateDraftAsync(CharacterId.New(), rawName);
