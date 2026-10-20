@@ -3,6 +3,8 @@
 Revision: 1
 Status: Draft | Ready for implementation | Implemented | Needs verification | Verified
 Designer: <role/session>
+Developer-created task branch: <branch name; use this same branch for design and test work>
+Base / review snapshot: <base revision; review revision and any uncommitted diff>
 Technical requirements: <R/P IDs and spec sections>
 Dependencies / owned files: <task IDs; intended file ownership>
 Related design: DESIGN_SPEC.md sections <numbers>; components <DS-C IDs>

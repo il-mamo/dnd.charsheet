@@ -9,6 +9,8 @@ Private-use Windows desktop character manager, strictly PHB 2024. Full classes/s
 C#/.NET + WPF/MVVM + SQLite; offline, local single-user operation. Windows 11 x64 default target. SDK 10.0.402 pinned; CommunityToolkit.Mvvm 8.4.2, Microsoft.Data.Sqlite 10.0.13 and MSTest 4.0.2 centrally pinned. Owner selected self-contained win-x64 ZIP with manual updates. Presentation/application/domain/infrastructure separation; live data under LocalApplicationData/DnD.CharSheet. External dice; labelled final-total input plus natural dice when required. PDF/private catalog excluded from GitHub. Other defaults are in specification section 2; they may be revised by owner instruction.
 
 ## Repository and map
+
+Owner workflow decision (2026-10-20): Developer creates a dedicated branch before each change; Graphics Designer and Tester both receive and work on that same branch. Record branch/base/review snapshot in handoffs; serialize overlapping edits/Git operations and recheck affected reviews after fixes. No separate role branches or implementation on main. This workflow update is on `workflow/shared-change-branch`; task 1.1's verified implementation status is unchanged.
 Repository: https://github.com/il-mamo/dnd.charsheet
 Local checkout: C:\Users\markm\source\repos\dnd.charsheet
 - AGENTS.md: workflow, targeted reading, clarification and summary maintenance.
