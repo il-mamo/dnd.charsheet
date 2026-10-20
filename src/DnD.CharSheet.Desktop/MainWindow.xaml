@@ -1,0 +1,48 @@
+﻿<Window x:Class="DnD.CharSheet.Desktop.MainWindow"
+ xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+ xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+ xmlns:automation="clr-namespace:System.Windows.Automation;assembly=PresentationCore"
+ Title="D&amp;D Character Journal" MinWidth="600" MinHeight="360"
+ Background="{DynamicResource Brush.Canvas}" Foreground="{DynamicResource Brush.Text}"
+ FontFamily="{StaticResource Font.Body}" FontSize="{StaticResource Type.Body}"
+ WindowStartupLocation="CenterScreen">
+ <Window.Resources><BooleanToVisibilityConverter x:Key="BooleanVisibility" /></Window.Resources>
+ <Grid>
+  <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+  <Border Background="{DynamicResource Brush.Surface}" Padding="{StaticResource Padding.Panel}" BorderBrush="{DynamicResource Brush.Divider}" BorderThickness="0,0,0,1">
+   <StackPanel>
+    <TextBlock Text="D&amp;D Character Journal" Style="{StaticResource Heading}"/>
+    <TextBlock Text="Player’s Handbook 2024" Foreground="{DynamicResource Brush.TextSecondary}"/>
+    <TextBlock Text="No character selected" Foreground="{DynamicResource Brush.TextSecondary}" Margin="0,8,0,0"/>
+   </StackPanel>
+  </Border>
+  <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Focusable="False">
+   <StackPanel Margin="{StaticResource Padding.Page}">
+    <WrapPanel>
+     <Border Style="{StaticResource Destination}"><TextBlock Text="Character"/></Border>
+     <Border Style="{StaticResource Destination}"><TextBlock Text="Inventory"/></Border>
+     <Border Style="{StaticResource Destination}"><TextBlock Text="Spells"/></Border>
+     <Border Style="{StaticResource Destination}"><TextBlock Text="Battle"/></Border>
+     <Border Style="{StaticResource Destination}"><TextBlock Text="Library"/></Border>
+     <Border Style="{StaticResource Destination}"><TextBlock Text="Settings"/></Border>
+    </WrapPanel>
+    <TextBlock Text="Navigation becomes available as features are implemented." Foreground="{DynamicResource Brush.TextSecondary}" Margin="0,8,0,16"/>
+    <Border Style="{StaticResource SectionPanel}">
+     <StackPanel MaxWidth="880" HorizontalAlignment="Left">
+      <TextBlock Text="Your adventure journal" Style="{StaticResource Heading}"/>
+      <TextBlock Text="Character creation and management will arrive in a later task." Margin="0,12,0,24"/>
+      <TextBlock Text="Local database" Style="{StaticResource SectionHeading}"/>
+      <TextBlock x:Name="DatabaseStatusText" Text="{Binding DatabaseStatus}" Margin="0,12,0,8" AutomationProperties.Name="Local database status" automation:AutomationProperties.LiveSetting="Polite">
+       <TextBlock.Style><Style TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}"><Setter Property="Foreground" Value="{DynamicResource Brush.Text}"/><Style.Triggers><DataTrigger Binding="{Binding HasFailed}" Value="True"><Setter Property="Foreground" Value="{DynamicResource Brush.Danger}"/></DataTrigger></Style.Triggers></Style></TextBlock.Style>
+      </TextBlock>
+      <StackPanel Visibility="{Binding HasFailed, Converter={StaticResource BooleanVisibility}}">
+       <TextBlock Text="Retry, or close the app and check access to the local data folder." Margin="0,0,0,16"/>
+       <Button Content="Retry database initialization" AutomationProperties.Name="Retry database initialization" Command="{Binding InitializeCommand}" HorizontalAlignment="Left"/>
+      </StackPanel>
+     </StackPanel>
+    </Border>
+   </StackPanel>
+  </ScrollViewer>
+ </Grid>
+</Window>
+
