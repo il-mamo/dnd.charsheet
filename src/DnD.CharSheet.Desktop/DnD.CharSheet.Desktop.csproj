@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <OutputType>WinExe</OutputType><UseWPF>true</UseWPF>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../DnD.CharSheet.Application/DnD.CharSheet.Application.csproj" />
+<ProjectReference Include="../DnD.CharSheet.Infrastructure/DnD.CharSheet.Infrastructure.csproj" />
+<PackageReference Include="CommunityToolkit.Mvvm" />
+  </ItemGroup>
+</Project>
+
+

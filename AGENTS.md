@@ -3,7 +3,7 @@
 ## Purpose and authority
 Build a Windows character-management application for Dungeons & Dragons using the Player’s Handbook 2024 exclusively. Repository: https://github.com/il-mamo/dnd.charsheet. No Jira integration.
 
-Follow the user's current instructions first. This file governs development workflow; `docs/TECHNICAL_SPEC.md` governs intended product behavior; `docs/PROJECT_SUMMARY.md` describes verified current state. `docs/AGENTS_ROLES.md` defines development roles. These roles are development responsibilities, not runtime AI features.
+Follow the user's current instructions first. This file governs development workflow; `docs/TECHNICAL_SPEC.md` governs intended product behavior; `docs/PROJECT_SUMMARY.md` describes verified current state. `docs/AGENTS_ROLES.md` defines development roles. `docs/DESIGN_SPEC.md` governs visual/interaction conventions within the technical scope. These roles are development responsibilities, not runtime AI features.
 
 ## Start every task
 1. Read this file and `docs/PROJECT_SUMMARY.md`.
@@ -22,7 +22,7 @@ Do not implement a proposed or blocked requirement as approved. If code conflict
 ## Bounded implementation workflow
 - Select one ready task from the specification, normally one demonstrable behavior. Split work that crosses several independent areas or cannot be verified in one focused handoff.
 - Record a brief task contract: ID, objective, scope/non-goals, requirements, affected files, dependencies, acceptance checks, owner.
-- For visible UI work obtain the Graphics Designer's concrete design contract before implementation. Reuse approved components when no new design is needed.
+- For visible UI work obtain the Graphics Designer's concrete design contract before implementation. Read relevant `docs/DESIGN_SPEC.md` sections and use `docs/templates/DESIGN_HANDOFF_TEMPLATE.md` for `docs/tasks/<task-id>.design.md`. Reuse approved components when no new design is needed; simple reuse needs only a component/state reference in the task.
 - Implement the smallest maintainable change. Keep rules/domain logic separate from UI and storage. Avoid unrelated refactors, speculative abstractions and unapproved dependencies.
 - Run targeted build/tests and applicable interaction checks. Rules calculations and data migrations need meaningful boundary tests. Never claim unexecuted checks passed.
 - Hand off to an independent Tester with diff, intended behavior, requirement IDs and evidence. Fix findings and rerun affected checks.

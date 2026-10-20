@@ -1,0 +1,21 @@
+# Build and local developer state
+**/bin/
+**/obj/
+.vs/
+*.user
+*.suo
+.local/
+artifacts/
+TestResults/
+
+# Private source content and live state must never enter the public repository.
+private/
+**/private-catalog/
+*.pdf
+*.db
+*.db-*
+*.sqlite
+*.sqlite-*
+*.sqlite3
+*.sqlite3-*
+*.zip

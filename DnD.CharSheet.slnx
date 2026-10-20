@@ -1,0 +1,13 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/DnD.CharSheet.Application/DnD.CharSheet.Application.csproj" />
+    <Project Path="src/DnD.CharSheet.Desktop/DnD.CharSheet.Desktop.csproj" />
+    <Project Path="src/DnD.CharSheet.Domain/DnD.CharSheet.Domain.csproj" />
+    <Project Path="src/DnD.CharSheet.Infrastructure/DnD.CharSheet.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/DnD.CharSheet.Application.Tests/DnD.CharSheet.Application.Tests.csproj" />
+    <Project Path="tests/DnD.CharSheet.Domain.Tests/DnD.CharSheet.Domain.Tests.csproj" />
+    <Project Path="tests/DnD.CharSheet.Infrastructure.Tests/DnD.CharSheet.Infrastructure.Tests.csproj" />
+  </Folder>
+</Solution>
