@@ -38,7 +38,7 @@ public sealed class CharacterLibraryTests
     [TestMethod]
     public async Task TrimmedBoundariesUnicodeAndDuplicateNamesSurviveReopen()
     {
-        var names = new[] { "  X  ", " " + new string('x', 80) + " ", "Éowyn  星", string.Concat(Enumerable.Repeat("😀", 40)), "Éowyn  星" };
+        var names = new[] { "  X  ", " " + new string('x', 80) + " ", "\u00c9owyn  \u661f", string.Concat(Enumerable.Repeat("\U0001f600", 40)), "\u00c9owyn  \u661f" };
         var expected = new List<CharacterDraft>();
         foreach (var name in names)
             expected.Add(await library.CreateDraftAsync(CharacterId.New(), name));
@@ -113,7 +113,7 @@ public sealed class CharacterLibraryTests
         CollectionAssert.AreEqual(new[] { new CharacterDraft(id, new CharacterRevision(17), "Unnamed draft") }, (await reader.ListAsync()).ToArray());
         await reader.CreateDraftAsync(CharacterId.New(), "New draft");
         Assert.AreEqual(17L, (await new SqliteCharacterRepository(upgraded).GetAsync(id))!.Revision.Value);
-        Assert.AreEqual(2L, Scalar(upgraded, "PRAGMA user_version;"));
+        Assert.AreEqual((long)CharacterDatabase.CurrentVersion, Scalar(upgraded, "PRAGMA user_version;"));
         Assert.IsNull(upgraded.Initialize());
     }
 
