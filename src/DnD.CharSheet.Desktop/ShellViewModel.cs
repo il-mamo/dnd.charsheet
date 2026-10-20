@@ -10,6 +10,23 @@ public sealed partial class ShellViewModel : ObservableObject
 {
     private readonly Func<Task> initialize;
     private readonly ICharacterLibrary library;
+    private CharacterDraft? activeDraft;
+    public CharacterDraft? ActiveDraft
+    {
+        get => activeDraft;
+        private set
+        {
+            if (!SetProperty(ref activeDraft, value)) return;
+            OnPropertyChanged(nameof(ActiveCharacterName));
+            OnPropertyChanged(nameof(ActiveCharacterId));
+            OnPropertyChanged(nameof(ActiveCharacterStatus));
+            OnPropertyChanged(nameof(ActiveCharacterAnnouncement));
+        }
+    }
+    public string ActiveCharacterName => ActiveDraft is { } draft ? $"Active character: {draft.Name}" : "No character selected";
+    public string ActiveCharacterId => ActiveDraft is { } draft ? $"Character ID: {draft.Id}" : "";
+    public string ActiveCharacterStatus => ActiveDraft is null ? "Activate a saved draft below." : "Incomplete draft";
+    public string ActiveCharacterAnnouncement => $"{ActiveCharacterName}. {ActiveCharacterStatus}. {ActiveCharacterId}";
     [ObservableProperty] private string databaseStatus = "Preparing local database…";
     [ObservableProperty] private bool hasFailed;
     [ObservableProperty] private bool isInitializing = true;
@@ -30,6 +47,14 @@ public sealed partial class ShellViewModel : ObservableObject
     {
         this.initialize = initialize;
         this.library = library;
+    }
+
+    [RelayCommand]
+    private void ActivateDraft(CharacterId? id)
+    {
+        // Resolve the canonical loaded snapshot, never a caller-supplied name/object.
+        var draft = Drafts.FirstOrDefault(candidate => candidate.Id == id);
+        if (draft is not null) ActiveDraft = draft;
     }
 
     [RelayCommand]
