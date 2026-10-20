@@ -53,7 +53,7 @@ Statuses: Proposed → Ready → In progress → Needs verification → Verified
 | Phase | Small task sequence | Acceptance gate |
 |---|---|---|
 | 0 Decisions and rules map | 0.1 record D1–D4; 0.2 creation source map and bounded catalog inventory; 0.3 SDK/package/packaging decisions and solution map | Approved baseline and accessible rules source; no guessed mechanics |
-| 1 Foundation | 1.1 solution/build/Windows CI (Verified locally; remote CI unrun); 1.2 domain IDs and migrations; 1.3 repository round-trip; 1.4 shell/design tokens | App launches; clean build; fresh and existing DB paths tested |
+| 1 Foundation | 1.1 solution/build/Windows CI (Verified locally; CI argument repair awaiting remote rerun); 1.2 domain IDs and migrations; 1.3 repository round-trip; 1.4 shell/design tokens | App launches; clean build; fresh and existing DB paths tested |
 | 2 Library and persistence | 2.1 library/create draft; 2.2 switching; 2.3 portraits; 2.4 save recovery; 2.5 backup/restore | Two distinct characters survive restart and restore, including portraits; switching cannot cross-write |
 | 3 Character model and existing entry | 3.1 ability/proficiency calculations; 3.2 identity/progression entry; 3.3 features/resources; 3.4 spellcasting entry | Representative supported existing higher-level characters validate and round-trip without resets |
 | 4 Guided creation | 4.1 wizard scaffolding/draft resume; 4.2 verified origin choices; 4.3 class/abilities/equipment choices; 4.4 review/finalization | Book-ordered flow; back/resume preserve choices; invalid prerequisites cannot finalize |

@@ -14,6 +14,7 @@ function Invoke-DotNet {
 
 Push-Location $root
 try {
+    & "$PSScriptRoot/Test-BuildArguments.ps1"
     & "$PSScriptRoot/Test-Architecture.ps1"
     if ($Task -in @('Restore', 'Verify')) {
         Invoke-DotNet restore DnD.CharSheet.slnx --locked-mode
@@ -30,8 +31,9 @@ try {
         if (-not $publish.StartsWith($artifactRoot, [StringComparison]::OrdinalIgnoreCase)) { throw 'Publish path escaped artifacts directory.' }
         # Clear only the fixed generated publish directory to exclude stale files.
         if (Test-Path $publish) { Remove-Item -LiteralPath $publish -Recurse -Force }
-        Invoke-DotNet restore src/DnD.CharSheet.Desktop/DnD.CharSheet.Desktop.csproj -r win-x64 --locked-mode -p:SelfContained=true
-        Invoke-DotNet publish src/DnD.CharSheet.Desktop/DnD.CharSheet.Desktop.csproj -c Release -r win-x64 --self-contained true --no-restore -p:PublishSingleFile=false -p:PublishTrimmed=false -o $publish
+        # Quote MSBuild properties so PowerShell forwards each colon-bearing token intact.
+        Invoke-DotNet restore src/DnD.CharSheet.Desktop/DnD.CharSheet.Desktop.csproj -r win-x64 --locked-mode '-p:SelfContained=true'
+        Invoke-DotNet publish src/DnD.CharSheet.Desktop/DnD.CharSheet.Desktop.csproj -c Release -r win-x64 --self-contained true --no-restore '-p:PublishSingleFile=false' '-p:PublishTrimmed=false' -o $publish
         foreach ($asset in @('DnD.CharSheet.Desktop.exe', 'coreclr.dll', 'PresentationFramework.dll', 'e_sqlite3.dll')) {
             if (-not (Test-Path (Join-Path $publish $asset))) { throw "Missing publish asset: $asset" }
         }
