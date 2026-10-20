@@ -1,4 +1,4 @@
-﻿<Window x:Class="DnD.CharSheet.Desktop.MainWindow"
+<Window x:Class="DnD.CharSheet.Desktop.MainWindow"
  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
  xmlns:automation="clr-namespace:System.Windows.Automation;assembly=PresentationCore"
@@ -12,7 +12,7 @@
   <Border Background="{DynamicResource Brush.Surface}" Padding="{StaticResource Padding.Panel}" BorderBrush="{DynamicResource Brush.Divider}" BorderThickness="0,0,0,1">
    <StackPanel>
     <TextBlock Text="D&amp;D Character Journal" Style="{StaticResource Heading}"/>
-    <TextBlock Text="Player’s Handbook 2024" Foreground="{DynamicResource Brush.TextSecondary}"/>
+    <TextBlock Text="Player&#x2019;s Handbook 2024" Foreground="{DynamicResource Brush.TextSecondary}"/>
     <TextBlock Text="No character selected" Foreground="{DynamicResource Brush.TextSecondary}" Margin="0,8,0,0"/>
    </StackPanel>
   </Border>
@@ -23,14 +23,14 @@
      <Border Style="{StaticResource Destination}"><TextBlock Text="Inventory"/></Border>
      <Border Style="{StaticResource Destination}"><TextBlock Text="Spells"/></Border>
      <Border Style="{StaticResource Destination}"><TextBlock Text="Battle"/></Border>
-     <Border Style="{StaticResource Destination}"><TextBlock Text="Library"/></Border>
+     <Border Style="{StaticResource Destination}" BorderBrush="{DynamicResource Brush.Border}"><TextBlock Text="Library - current" Foreground="{DynamicResource Brush.Text}"/></Border>
      <Border Style="{StaticResource Destination}"><TextBlock Text="Settings"/></Border>
     </WrapPanel>
-    <TextBlock Text="Navigation becomes available as features are implemented." Foreground="{DynamicResource Brush.TextSecondary}" Margin="0,8,0,16"/>
+    <TextBlock Text="Library is open. Other destinations become available as features are implemented." Foreground="{DynamicResource Brush.TextSecondary}" Margin="0,8,0,16"/>
     <Border Style="{StaticResource SectionPanel}">
      <StackPanel MaxWidth="880" HorizontalAlignment="Left">
-      <TextBlock Text="Your adventure journal" Style="{StaticResource Heading}"/>
-      <TextBlock Text="Character creation and management will arrive in a later task." Margin="0,12,0,24"/>
+      <TextBlock Text="Character library" Style="{StaticResource Heading}"/>
+      <TextBlock Text="Create and keep incomplete character drafts here." Margin="0,12,0,24"/>
       <TextBlock Text="Local database" Style="{StaticResource SectionHeading}"/>
       <TextBlock x:Name="DatabaseStatusText" Text="{Binding DatabaseStatus}" Margin="0,12,0,8" AutomationProperties.Name="Local database status" automation:AutomationProperties.LiveSetting="Polite">
        <TextBlock.Style><Style TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}"><Setter Property="Foreground" Value="{DynamicResource Brush.Text}"/><Style.Triggers><DataTrigger Binding="{Binding HasFailed}" Value="True"><Setter Property="Foreground" Value="{DynamicResource Brush.Danger}"/></DataTrigger></Style.Triggers></Style></TextBlock.Style>
@@ -41,8 +41,37 @@
       </StackPanel>
      </StackPanel>
     </Border>
+    <Border Style="{StaticResource SectionPanel}" Padding="{StaticResource Padding.Panel}" Margin="0,16,0,0">
+     <StackPanel MaxWidth="560" HorizontalAlignment="Stretch">
+      <TextBlock Text="New character draft" Style="{StaticResource SectionHeading}" Margin="0,0,0,12"/>
+      <Label Target="{Binding ElementName=DraftNameBox}" Content="Character name (required)" Foreground="{DynamicResource Brush.Text}" Padding="0" Margin="0,0,0,12"/>
+      <TextBox x:Name="DraftNameBox" Text="{Binding DraftNameInput, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="Character name, required" AutomationProperties.HelpText="{Binding NameFeedback}" KeyDown="DraftNameKeyDown" Margin="0,0,0,12">
+       <TextBox.Style><Style TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}"><Style.Triggers><DataTrigger Binding="{Binding IsCreating}" Value="True"><Setter Property="IsEnabled" Value="False"/></DataTrigger></Style.Triggers></Style></TextBox.Style>
+      </TextBox>
+      <TextBlock x:Name="NameFeedbackText" Text="{Binding NameFeedback}" AutomationProperties.Name="Character name feedback" automation:AutomationProperties.LiveSetting="Polite" Margin="0,0,0,12">
+       <TextBlock.Style><Style TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}"><Setter Property="Foreground" Value="{DynamicResource Brush.TextSecondary}"/><Style.Triggers><DataTrigger Binding="{Binding HasNameError}" Value="True"><Setter Property="Foreground" Value="{DynamicResource Brush.Danger}"/></DataTrigger></Style.Triggers></Style></TextBlock.Style>
+      </TextBlock>
+      <Button Style="{StaticResource PrimaryButton}" Content="Create draft" AutomationProperties.Name="Create draft" Command="{Binding CreateDraftCommand}" HorizontalAlignment="Left"/>
+      <TextBlock x:Name="CreationStatusText" Text="{Binding CreationStatus}" AutomationProperties.Name="Draft save status" automation:AutomationProperties.LiveSetting="Polite" Margin="0,12,0,0">
+       <TextBlock.Style><Style TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}"><Style.Triggers><DataTrigger Binding="{Binding HasCreationError}" Value="True"><Setter Property="Foreground" Value="{DynamicResource Brush.Danger}"/></DataTrigger><DataTrigger Binding="{Binding HasCreationSucceeded}" Value="True"><Setter Property="Foreground" Value="{DynamicResource Brush.Success}"/></DataTrigger></Style.Triggers></Style></TextBlock.Style>
+      </TextBlock>
+     </StackPanel>
+    </Border>
+    <Border Style="{StaticResource SectionPanel}" Padding="{StaticResource Padding.Panel}" Margin="0,16,0,0">
+     <StackPanel>
+      <TextBlock Text="Saved characters" Style="{StaticResource SectionHeading}"/>
+      <TextBlock x:Name="LibraryStatusText" Text="{Binding LibraryStatus}" AutomationProperties.Name="Character library status" automation:AutomationProperties.LiveSetting="Polite" Margin="0,12,0,12"/>
+      <Button Content="Retry library" AutomationProperties.Name="Retry character library" Command="{Binding RetryLibraryCommand}" Visibility="{Binding CanRetryLibrary, Converter={StaticResource BooleanVisibility}}" HorizontalAlignment="Left" Margin="0,0,0,12"/>
+      <ItemsControl ItemsSource="{Binding Drafts}" AutomationProperties.Name="Saved incomplete character drafts">
+       <ItemsControl.ItemTemplate><DataTemplate>
+        <Border Padding="12" BorderBrush="{DynamicResource Brush.Divider}" BorderThickness="0,0,0,1">
+         <StackPanel><TextBlock Text="{Binding Name}"/><TextBlock Text="Incomplete draft" Foreground="{DynamicResource Brush.TextSecondary}"/></StackPanel>
+        </Border>
+       </DataTemplate></ItemsControl.ItemTemplate>
+      </ItemsControl>
+     </StackPanel>
+    </Border>
    </StackPanel>
   </ScrollViewer>
  </Grid>
 </Window>
-
