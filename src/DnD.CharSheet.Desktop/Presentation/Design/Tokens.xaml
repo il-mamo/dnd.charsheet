@@ -26,19 +26,19 @@
 <sys:Double x:Key="Space.32">32</sys:Double>
  <FontFamily x:Key="Font.Body">Segoe UI</FontFamily>
  <FontFamily x:Key="Font.Heading">Georgia, Segoe UI</FontFamily>
- <sys:Double x:Key="Type.Body">14</sys:Double>
- <sys:Double x:Key="Type.Helper">12</sys:Double>
- <sys:Double x:Key="Type.Heading">24</sys:Double>
- <sys:Double x:Key="Type.SectionHeading">18</sys:Double>
- <sys:Double x:Key="Type.Stat">28</sys:Double>
- <sys:Double x:Key="Size.Input">36</sys:Double>
+ <sys:Double x:Key="Type.Body">16</sys:Double>
+ <sys:Double x:Key="Type.Helper">13</sys:Double>
+ <sys:Double x:Key="Type.Heading">28</sys:Double>
+ <sys:Double x:Key="Type.SectionHeading">20</sys:Double>
+ <sys:Double x:Key="Type.Stat">32</sys:Double>
+ <sys:Double x:Key="Size.Input">40</sys:Double>
  <sys:Double x:Key="Size.Icon.Inline">16</sys:Double>
  <sys:Double x:Key="Size.Icon.Toolbar">20</sys:Double>
  <CornerRadius x:Key="Radius.Control">4</CornerRadius>
  <CornerRadius x:Key="Radius.Panel">8</CornerRadius>
  <Thickness x:Key="Border.Normal">1</Thickness>
  <Thickness x:Key="Border.Focus">2</Thickness>
- <Thickness x:Key="Padding.Panel">16</Thickness>
+ <Thickness x:Key="Padding.Panel">24</Thickness>
  <Thickness x:Key="Padding.Page">24</Thickness>
  <Style TargetType="TextBlock"><Setter Property="TextWrapping" Value="Wrap"/></Style>
  <Style x:Key="Heading" TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">

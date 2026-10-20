@@ -3,54 +3,54 @@
  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
  xmlns:local="clr-namespace:DnD.CharSheet.Desktop"
  xmlns:automation="clr-namespace:System.Windows.Automation;assembly=PresentationCore"
- Title="D&amp;D Character Journal" MinWidth="600" MinHeight="360"
+ Title="DnD.CharSheet" WindowStyle="None" ResizeMode="NoResize" WindowState="Maximized"
  Background="{DynamicResource Brush.Canvas}" Foreground="{DynamicResource Brush.Text}"
  FontFamily="{StaticResource Font.Body}" FontSize="{StaticResource Type.Body}"
  WindowStartupLocation="CenterScreen">
- <Window.Resources><BooleanToVisibilityConverter x:Key="BooleanVisibility" /><local:CharacterIdentityEqualsConverter x:Key="SameCharacter" /></Window.Resources>
+ <Window.Resources><local:DraftOrdinalConverter x:Key="DraftOrdinal"/><BooleanToVisibilityConverter x:Key="BooleanVisibility" /><local:CharacterIdentityEqualsConverter x:Key="SameCharacter" /></Window.Resources>
  <Window.InputBindings><KeyBinding Key="C" Modifiers="Control+Shift" Command="{x:Static local:MainWindow.SwitchCharacterCommand}"/></Window.InputBindings>
  <Window.CommandBindings><CommandBinding Command="{x:Static local:MainWindow.SwitchCharacterCommand}" Executed="SwitchCharacterExecuted"/></Window.CommandBindings>
  <Grid>
-  <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
-  <Border Background="{DynamicResource Brush.Surface}" Padding="{StaticResource Padding.Panel}" BorderBrush="{DynamicResource Brush.Divider}" BorderThickness="0,0,0,1">
-   <ScrollViewer MaxHeight="180" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Focusable="False"><StackPanel>
-    <TextBlock Text="D&amp;D Character Journal" Style="{StaticResource Heading}"/>
-    <TextBlock Text="Player&#x2019;s Handbook 2024" Foreground="{DynamicResource Brush.TextSecondary}"/>
-    <TextBlock x:Name="ActiveCharacterText" Text="{Binding ActiveCharacterName}" AutomationProperties.Name="{Binding ActiveCharacterAnnouncement}" automation:AutomationProperties.LiveSetting="Polite" Margin="0,8,0,0"/>
-    <TextBlock Text="{Binding ActiveCharacterId}" Foreground="{DynamicResource Brush.TextSecondary}"/>
-    <TextBlock Text="{Binding ActiveCharacterStatus}" Foreground="{DynamicResource Brush.TextSecondary}"/>
-    <Button Content="Switch character" AutomationProperties.Name="Switch character" Command="{x:Static local:MainWindow.SwitchCharacterCommand}" HorizontalAlignment="Left" Margin="0,8,0,0"/>
-   </StackPanel></ScrollViewer>
+  <Grid.RowDefinitions><RowDefinition Height="32"/><RowDefinition Height="144"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+  <Border Background="{DynamicResource Brush.Surface}" BorderBrush="{DynamicResource Brush.Divider}" BorderThickness="0,0,0,1">
+   <DockPanel LastChildFill="True">
+    <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+     <Button Content="&#x2014;" Width="40" MinHeight="32" Padding="0" AutomationProperties.Name="Minimize" Click="MinimizeClicked"/>
+     <Button Content="&#x00D7;" Width="40" MinHeight="32" Padding="0" AutomationProperties.Name="Close" Click="CloseClicked"/>
+    </StackPanel>
+    <TextBlock Text="DnD.CharSheet" Margin="24,0" VerticalAlignment="Center" FontFamily="{StaticResource Font.Heading}"/>
+   </DockPanel>
   </Border>
-  <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Focusable="False">
-   <StackPanel Margin="{StaticResource Padding.Page}">
-    <WrapPanel>
-     <Border Style="{StaticResource Destination}"><TextBlock Text="Character"/></Border>
-     <Border Style="{StaticResource Destination}"><TextBlock Text="Inventory"/></Border>
-     <Border Style="{StaticResource Destination}"><TextBlock Text="Spells"/></Border>
-     <Border Style="{StaticResource Destination}"><TextBlock Text="Battle"/></Border>
-     <Border Style="{StaticResource Destination}" BorderBrush="{DynamicResource Brush.Border}"><TextBlock Text="Library - current" Foreground="{DynamicResource Brush.Text}"/></Border>
-     <Border Style="{StaticResource Destination}"><TextBlock Text="Settings"/></Border>
-    </WrapPanel>
-    <TextBlock Text="Library is open. Other destinations become available as features are implemented." Foreground="{DynamicResource Brush.TextSecondary}" Margin="0,8,0,16"/>
-    <Border Style="{StaticResource SectionPanel}">
-     <StackPanel MaxWidth="880" HorizontalAlignment="Left">
-      <TextBlock Text="Character library" Style="{StaticResource Heading}"/>
-      <TextBlock Text="Create and keep incomplete character drafts here." Margin="0,12,0,24"/>
-      <TextBlock Text="Local database" Style="{StaticResource SectionHeading}"/>
-      <TextBlock x:Name="DatabaseStatusText" Text="{Binding DatabaseStatus}" Margin="0,12,0,8" AutomationProperties.Name="Local database status" automation:AutomationProperties.LiveSetting="Polite">
-       <TextBlock.Style><Style TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}"><Setter Property="Foreground" Value="{DynamicResource Brush.Text}"/><Style.Triggers><DataTrigger Binding="{Binding HasFailed}" Value="True"><Setter Property="Foreground" Value="{DynamicResource Brush.Danger}"/></DataTrigger></Style.Triggers></Style></TextBlock.Style>
-      </TextBlock>
-      <StackPanel Visibility="{Binding HasFailed, Converter={StaticResource BooleanVisibility}}">
-       <TextBlock Text="Retry, or close the app and check access to the local data folder." Margin="0,0,0,16"/>
-       <Button Content="Retry database initialization" AutomationProperties.Name="Retry database initialization" Command="{Binding InitializeCommand}" HorizontalAlignment="Left"/>
+  <Border Grid.Row="1" Padding="24,12" BorderBrush="{DynamicResource Brush.Brass}" BorderThickness="0,0,0,1">
+   <Grid>
+    <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="720"/></Grid.ColumnDefinitions>
+    <StackPanel VerticalAlignment="Center">
+     <TextBlock Text="PLAYER'S HANDBOOK 2024" FontSize="13" Foreground="{DynamicResource Brush.TextSecondary}"/>
+     <TextBlock Text="Character library" Style="{StaticResource Heading}" Margin="0,8,0,12"/>
+     <Border Height="1" Width="120" Background="{DynamicResource Brush.Brass}" HorizontalAlignment="Left"/>
+    </StackPanel>
+    <Grid Grid.Column="1">
+     <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+     <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Focusable="False" Margin="0,0,24,0">
+      <StackPanel VerticalAlignment="Center">
+       <TextBlock x:Name="ActiveCharacterText" Text="{Binding ActiveCharacterName}" AutomationProperties.Name="{Binding ActiveCharacterAnnouncement}" automation:AutomationProperties.LiveSetting="Polite" FontWeight="SemiBold"/>
+       <TextBlock Text="{Binding ActiveCharacterStatus}" Foreground="{DynamicResource Brush.TextSecondary}" FontSize="13" Margin="0,8,0,0"/>
       </StackPanel>
-     </StackPanel>
-    </Border>
-    <Border Style="{StaticResource SectionPanel}" Padding="{StaticResource Padding.Panel}" Margin="0,16,0,0">
-     <StackPanel x:Name="NewDraftPanel" MaxWidth="560" HorizontalAlignment="Stretch">
+     </ScrollViewer>
+     <Button Grid.Column="1" Content="Switch character" Command="{x:Static local:MainWindow.SwitchCharacterCommand}" AutomationProperties.Name="Switch character" VerticalAlignment="Center"/>
+    </Grid>
+   </Grid>
+  </Border>
+  <Grid Grid.Row="2" Margin="24">
+   <Grid.ColumnDefinitions><ColumnDefinition Width="560"/><ColumnDefinition Width="24"/><ColumnDefinition/></Grid.ColumnDefinitions>
+   <Border Style="{StaticResource SectionPanel}">
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Focusable="False">
+     <StackPanel>
+      <TextBlock x:Name="DatabaseStatusText" Text="{Binding DatabaseStatus}" Visibility="{Binding ShowStartupStatus, Converter={StaticResource BooleanVisibility}}" AutomationProperties.Name="Character loading status" automation:AutomationProperties.LiveSetting="Polite" Margin="0,0,0,12"/>
+      <Button Content="Retry" AutomationProperties.Name="Retry loading characters" Command="{Binding InitializeCommand}" Visibility="{Binding HasFailed, Converter={StaticResource BooleanVisibility}}" HorizontalAlignment="Left" Margin="0,0,0,24"/>
+     <StackPanel x:Name="NewDraftPanel"  HorizontalAlignment="Stretch">
       <TextBlock Text="New character draft" Style="{StaticResource SectionHeading}" Margin="0,0,0,12"/>
-      <Label Target="{Binding ElementName=DraftNameBox}" Content="Character name (required)" Foreground="{DynamicResource Brush.Text}" Padding="0" Margin="0,0,0,12"/>
+      <Label Target="{Binding ElementName=DraftNameBox}" Content="Character name (required)" FontSize="14" Foreground="{DynamicResource Brush.Text}" Padding="0" Margin="0,0,0,12"/>
       <TextBox x:Name="DraftNameBox" Text="{Binding DraftNameInput, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="Character name, required" AutomationProperties.HelpText="{Binding NameFeedback}" KeyDown="DraftNameKeyDown" Margin="0,0,0,12">
        <TextBox.Style><Style TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}"><Style.Triggers><DataTrigger Binding="{Binding IsCreating}" Value="True"><Setter Property="IsEnabled" Value="False"/></DataTrigger></Style.Triggers></Style></TextBox.Style>
       </TextBox>
@@ -62,19 +62,33 @@
        <TextBlock.Style><Style TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}"><Style.Triggers><DataTrigger Binding="{Binding HasCreationError}" Value="True"><Setter Property="Foreground" Value="{DynamicResource Brush.Danger}"/></DataTrigger><DataTrigger Binding="{Binding HasCreationSucceeded}" Value="True"><Setter Property="Foreground" Value="{DynamicResource Brush.Success}"/></DataTrigger></Style.Triggers></Style></TextBlock.Style>
       </TextBlock>
      </StackPanel>
-    </Border>
-    <Border Style="{StaticResource SectionPanel}" Padding="{StaticResource Padding.Panel}" Margin="0,16,0,0">
-     <StackPanel>
+
+     </StackPanel>
+    </ScrollViewer>
+   </Border>
+   <Border Grid.Column="2" Style="{StaticResource SectionPanel}">
+    <DockPanel>
+     <StackPanel DockPanel.Dock="Top">
       <TextBlock Text="Saved characters" Style="{StaticResource SectionHeading}"/>
       <TextBlock x:Name="LibraryStatusText" Text="{Binding LibraryStatus}" AutomationProperties.Name="Character library status" automation:AutomationProperties.LiveSetting="Polite" Margin="0,12,0,12"/>
-      <Button Content="Retry library" AutomationProperties.Name="Retry character library" Command="{Binding RetryLibraryCommand}" Visibility="{Binding CanRetryLibrary, Converter={StaticResource BooleanVisibility}}" HorizontalAlignment="Left" Margin="0,0,0,12"/>
-      <ItemsControl x:Name="SavedCharacters" ItemsSource="{Binding Drafts}" AutomationProperties.Name="Saved incomplete character drafts">
+      <Button Content="Retry" AutomationProperties.Name="Retry character library" Command="{Binding RetryLibraryCommand}" Visibility="{Binding CanRetryLibrary, Converter={StaticResource BooleanVisibility}}" HorizontalAlignment="Left" Margin="0,0,0,12"/>
+     </StackPanel>
+     <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Focusable="False">
+      <ItemsControl x:Name="SavedCharacters" ItemsSource="{Binding Drafts}" AlternationCount="2147483647" AutomationProperties.Name="Saved incomplete character drafts">
+       <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
        <ItemsControl.ItemTemplate><DataTemplate>
-        <Border Padding="12" BorderBrush="{DynamicResource Brush.Divider}" BorderThickness="0,0,0,1">
+        <Border Width="320" MinHeight="180" Padding="24" Margin="0,0,16,16">
+         <Border.Style><Style TargetType="Border">
+          <Setter Property="Background" Value="{DynamicResource Brush.SurfaceMuted}"/>
+          <Setter Property="BorderBrush" Value="{DynamicResource Brush.Border}"/>
+          <Setter Property="BorderThickness" Value="1"/><Setter Property="CornerRadius" Value="8"/>
+          <Style.Triggers><DataTrigger Value="True"><DataTrigger.Binding><MultiBinding Converter="{StaticResource SameCharacter}"><Binding Path="Id"/><Binding Path="DataContext.ActiveDraft.Id" RelativeSource="{RelativeSource AncestorType=Window}"/></MultiBinding></DataTrigger.Binding><Setter Property="Background" Value="{DynamicResource Brush.Selection}"/><Setter Property="BorderThickness" Value="4,1,1,1"/></DataTrigger></Style.Triggers>
+         </Style></Border.Style>
          <StackPanel>
-          <TextBlock Text="{Binding Name}"/><TextBlock Text="Incomplete draft" Foreground="{DynamicResource Brush.TextSecondary}"/>
-          <TextBlock Text="{Binding Id, StringFormat='Character ID: {0}'}" Foreground="{DynamicResource Brush.TextSecondary}"/>
-          <Button HorizontalAlignment="Left" Margin="0,8,0,0" Command="{Binding DataContext.ActivateDraftCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding Id}">
+          <TextBlock Text="{Binding RelativeSource={RelativeSource AncestorType=ContentPresenter}, Path=(ItemsControl.AlternationIndex), Converter={StaticResource DraftOrdinal}}" Foreground="{DynamicResource Brush.TextSecondary}" FontSize="13"/>
+          <TextBlock Text="{Binding Name}" Style="{StaticResource SectionHeading}" Margin="0,8,0,8"/>
+          <TextBlock Text="Incomplete draft" Foreground="{DynamicResource Brush.TextSecondary}" FontSize="13"/>
+          <Button HorizontalAlignment="Left" Margin="0,16,0,0" Command="{Binding DataContext.ActivateDraftCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding Id}">
            <AutomationProperties.Name><MultiBinding StringFormat="Activate {0}, character ID {1}"><Binding Path="Name"/><Binding Path="Id"/></MultiBinding></AutomationProperties.Name>
            <Button.Style><Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
             <Setter Property="Content" Value="Activate"/>
@@ -85,9 +99,9 @@
         </Border>
        </DataTemplate></ItemsControl.ItemTemplate>
       </ItemsControl>
-     </StackPanel>
-    </Border>
-   </StackPanel>
-  </ScrollViewer>
+     </ScrollViewer>
+    </DockPanel>
+   </Border>
+  </Grid>
  </Grid>
 </Window>
