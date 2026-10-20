@@ -25,7 +25,7 @@ public sealed class CharacterDatabaseTests
         Assert.IsNull(database.Initialize());
         using (var connection = database.OpenConnection())
         {
-            Assert.AreEqual(1L, Scalar(connection, "PRAGMA user_version;"));
+            Assert.AreEqual((long)CharacterDatabase.CurrentVersion, Scalar(connection, "PRAGMA user_version;"));
             Execute(connection, "INSERT INTO characters(id) VALUES ('12345678-1234-1234-1234-123456789abc');");
             Assert.AreEqual(0L, Scalar(connection, "SELECT revision FROM characters;"));
         }
@@ -78,7 +78,7 @@ public sealed class CharacterDatabaseTests
         Assert.AreEqual(0L, Scalar(snapshot, "SELECT count(*) FROM sqlite_master WHERE name='characters';"));
         using var current = database.OpenConnection();
         Assert.AreEqual("preserved", Scalar(current, "SELECT value FROM legacy;"));
-        Assert.AreEqual(1L, Scalar(current, "PRAGMA user_version;"));
+        Assert.AreEqual((long)CharacterDatabase.CurrentVersion, Scalar(current, "PRAGMA user_version;"));
     }
 
     [TestMethod]
@@ -117,7 +117,7 @@ public sealed class CharacterDatabaseTests
     {
         Directory.CreateDirectory(Path.GetDirectoryName(PathToDatabase)!);
         using (var original = OpenRaw(PathToDatabase))
-            Execute(original, "CREATE TABLE future(value TEXT); INSERT INTO future VALUES ('untouched'); PRAGMA user_version=2;");
+            Execute(original, "CREATE TABLE future(value TEXT); INSERT INTO future VALUES ('untouched'); PRAGMA user_version=3;");
         var before = File.ReadAllBytes(PathToDatabase);
         Assert.ThrowsExactly<InvalidOperationException>(() => new CharacterDatabase(PathToDatabase).Initialize());
         CollectionAssert.AreEqual(before, File.ReadAllBytes(PathToDatabase));

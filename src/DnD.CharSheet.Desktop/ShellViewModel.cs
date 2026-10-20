@@ -1,35 +1,58 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using DnD.CharSheet.Application;
+using DnD.CharSheet.Domain;
+using System.Collections.ObjectModel;
 
 namespace DnD.CharSheet.Desktop;
 
 public sealed partial class ShellViewModel : ObservableObject
 {
     private readonly Func<Task> initialize;
+    private readonly ICharacterLibrary library;
     [ObservableProperty] private string databaseStatus = "Preparing local database…";
     [ObservableProperty] private bool hasFailed;
     [ObservableProperty] private bool isInitializing = true;
+    [ObservableProperty] private bool canCreate;
+    [ObservableProperty] private bool canRetryLibrary;
+    [ObservableProperty] private bool isCreating;
+    [ObservableProperty] private bool hasNameError;
+    [ObservableProperty] private bool hasCreationError;
+    [ObservableProperty] private bool hasCreationSucceeded;
+    [ObservableProperty] private string draftNameInput = "";
+    [ObservableProperty] private string nameFeedback = "Use 1–80 characters. Duplicate names are allowed.";
+    [ObservableProperty] private string creationStatus = "";
+    [ObservableProperty] private string libraryStatus = "Waiting for local database.";
     private bool running;
+    public ObservableCollection<CharacterDraft> Drafts { get; } = [];
 
-    public ShellViewModel(Func<Task> initialize) => this.initialize = initialize;
+    public ShellViewModel(Func<Task> initialize, ICharacterLibrary library)
+    {
+        this.initialize = initialize;
+        this.library = library;
+    }
 
     [RelayCommand]
     public async Task InitializeAsync()
     {
         if (running) return;
         running = true;
+        CanCreate = false;
+        CanRetryLibrary = false;
         HasFailed = false;
         IsInitializing = true;
         DatabaseStatus = "Preparing local database…";
+        LibraryStatus = "Waiting for local database.";
         try
         {
             await initialize();
             DatabaseStatus = "Local database ready.";
+            await LoadLibraryAsync();
         }
         catch (Exception)
         {
-            // Startup failures never reset or replace user data. Retrying uses the same initializer.
             DatabaseStatus = "Local database could not be initialized.";
+            LibraryStatus = "Library unavailable until the local database is ready.";
             HasFailed = true;
         }
         finally
@@ -37,5 +60,75 @@ public sealed partial class ShellViewModel : ObservableObject
             IsInitializing = false;
             running = false;
         }
+    }
+
+    private async Task LoadLibraryAsync()
+    {
+        CanCreate = false;
+        CanRetryLibrary = false;
+        LibraryStatus = "Loading saved characters…";
+        try
+        {
+            var drafts = await library.ListAsync();
+            Drafts.Clear();
+            foreach (var draft in drafts) Drafts.Add(draft);
+            LibraryStatus = Drafts.Count == 0 ? "No saved characters yet. Create your first draft above." : $"{Drafts.Count} saved incomplete drafts.";
+            CanCreate = true;
+        }
+        catch (Exception)
+        {
+            LibraryStatus = "Saved characters could not be loaded. Retry the library.";
+            CanRetryLibrary = true;
+        }
+    }
+
+    [RelayCommand(CanExecute = nameof(CanRetryLibrary))]
+    private async Task RetryLibraryAsync() => await LoadLibraryAsync();
+
+    partial void OnCanRetryLibraryChanged(bool value) => RetryLibraryCommand.NotifyCanExecuteChanged();
+    partial void OnCanCreateChanged(bool value) => CreateDraftCommand.NotifyCanExecuteChanged();
+
+    [RelayCommand(CanExecute = nameof(CanCreate))]
+    private async Task CreateDraftAsync()
+    {
+        if (!CanCreate) return;
+        HasNameError = false;
+        HasCreationError = false;
+        HasCreationSucceeded = false;
+        var rawName = DraftNameInput;
+        if (rawName.Any(char.IsControl)) NameFeedback = "Use a single line without control characters.";
+        else if (string.IsNullOrWhiteSpace(rawName)) NameFeedback = "Enter a character name.";
+        else if (rawName.Trim().Length > DraftName.MaximumLength) NameFeedback = "Use 80 characters or fewer.";
+        else
+        {
+            NameFeedback = "Use 1–80 characters. Duplicate names are allowed.";
+            CanCreate = false;
+            IsCreating = true;
+            CreationStatus = "Creating draft…";
+            try
+            {
+                var saved = await library.CreateDraftAsync(CharacterId.New(), rawName);
+                DraftNameInput = "";
+                HasCreationSucceeded = true;
+                CreationStatus = $"Draft “{saved.Name}” saved.";
+                // The durable result is shown even if a later library reload fails.
+                Drafts.Add(saved);
+                LibraryStatus = $"{Drafts.Count} saved incomplete drafts.";
+            }
+            catch (Exception)
+            {
+                HasCreationError = true;
+                CreationStatus = "Draft could not be saved. Your name is kept; try Create draft again.";
+            }
+            finally
+            {
+                IsCreating = false;
+                CanCreate = true;
+            }
+            return;
+        }
+        HasNameError = true;
+        HasCreationError = true;
+        CreationStatus = "Draft not created. Check the character name.";
     }
 }

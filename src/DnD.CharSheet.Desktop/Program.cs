@@ -1,4 +1,4 @@
-﻿using System.Windows;
+using System.Windows;
 using DnD.CharSheet.Infrastructure;
 using DnD.CharSheet.Desktop.Presentation.Design;
 
@@ -17,6 +17,6 @@ internal static class Program
         Theme.Apply(app.Resources);
         SystemParameters.StaticPropertyChanged += (_, _) => Theme.Apply(app.Resources);
         var database = new CharacterDatabase(CharacterDatabase.DefaultPath);
-        app.Run(new MainWindow(() => Task.Run(() => { database.Initialize(); })));
+        app.Run(new MainWindow(() => Task.Run(() => { database.Initialize(); }), new SqliteCharacterLibrary(database)));
     }
 }
