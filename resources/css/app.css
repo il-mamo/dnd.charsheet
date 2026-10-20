@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap');
 @import 'tailwindcss';
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
@@ -8,4 +9,19 @@
         Instrument Sans, ui-sans-serif, system-ui, sans-serif,
         'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
         'Noto Color Emoji';
+}
+
+:root {
+    font-family: 'Manrope', sans-serif;
+    color: #1c2a2e;
+    background: #f0f2ee;
+}
+
+body {
+    margin: 0;
+}
+button,
+input,
+textarea {
+    font: inherit;
 }
