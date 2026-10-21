@@ -5,7 +5,7 @@ namespace DnD.CharSheet.Infrastructure;
 /// <summary>Startup-only schema initialization. Call off the UI thread before opening repositories.</summary>
 public sealed class CharacterDatabase
 {
-    public const int CurrentVersion = 2;
+    public const int CurrentVersion = 3;
     private readonly string databasePath;
 
     public CharacterDatabase(string databasePath)
@@ -89,12 +89,23 @@ public sealed class CharacterDatabase
             """;
         migration.ExecuteNonQuery();
         }
+        if (version < 2)
+        {
         migration.CommandText = """
             CREATE TABLE character_drafts (
                 character_id TEXT NOT NULL PRIMARY KEY REFERENCES characters(id) ON DELETE CASCADE,
                 name TEXT NOT NULL CHECK (length(name) BETWEEN 1 AND 80 AND name = trim(name))
             ) STRICT;
             PRAGMA user_version = 2;
+            """;
+        migration.ExecuteNonQuery();
+        }
+        migration.CommandText = """
+            CREATE TABLE character_portraits (
+                character_id TEXT NOT NULL PRIMARY KEY REFERENCES characters(id) ON DELETE CASCADE,
+                asset TEXT NOT NULL CHECK(length(asset) = 32 AND asset NOT GLOB '*[^0-9a-f]*')
+            ) STRICT;
+            PRAGMA user_version = 3;
             """;
         migration.ExecuteNonQuery();
         transaction.Commit();

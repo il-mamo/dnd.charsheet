@@ -43,6 +43,7 @@ public sealed partial class ShellViewModel : ObservableObject
     [ObservableProperty] private string nameFeedback = "Use 1–80 characters. Duplicate names are allowed.";
     [ObservableProperty] private string creationStatus = "";
     [ObservableProperty] private string libraryStatus = "Loading characters…";
+    public void AnnouncePortraitSaved(string name) => LibraryStatus = $"Portrait for {name} saved.";
     private bool running;
     public ObservableCollection<CharacterDraft> Drafts { get; } = [];
 

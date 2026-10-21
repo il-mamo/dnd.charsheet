@@ -10,12 +10,15 @@ namespace DnD.CharSheet.Desktop;
 public partial class MainWindow : Window
 {
     public static RoutedUICommand SwitchCharacterCommand { get; } = new("Switch character", nameof(SwitchCharacterCommand), typeof(MainWindow));
-    public MainWindow(Func<Task> initialize, DnD.CharSheet.Application.ICharacterLibrary library)
+    public DnD.CharSheet.Application.ICharacterPortraits? Portraits { get; }
+    public static readonly DependencyProperty PortraitRefreshProperty = DependencyProperty.Register(nameof(PortraitRefresh), typeof(int), typeof(MainWindow), new PropertyMetadata(0));
+    public int PortraitRefresh { get => (int)GetValue(PortraitRefreshProperty); set => SetValue(PortraitRefreshProperty, value); }
+    public MainWindow(Func<Task> initialize, DnD.CharSheet.Application.ICharacterLibrary library, DnD.CharSheet.Application.ICharacterPortraits? portraits = null)
     {
+        Portraits = portraits;
         InitializeComponent();
         var model = new ShellViewModel(initialize, library);
         DataContext = model;
-
         Loaded += async (_, _) => await model.InitializeCommand.ExecuteAsync(null);
         var focusedName = false;
         model.PropertyChanged += (_, args) =>
@@ -57,6 +60,20 @@ public partial class MainWindow : Window
     private void MinimizeClicked(object sender, RoutedEventArgs e) => WindowState = WindowState.Minimized;
 
     private void CloseClicked(object sender, RoutedEventArgs e) => Close();
+
+    private void ChangePortrait(object sender, RoutedEventArgs e)
+    {
+        if (Portraits is null || DataContext is not ShellViewModel model) return;
+        var character = (sender as FrameworkElement)?.DataContext as DnD.CharSheet.Application.CharacterDraft ?? model.ActiveDraft;
+        if (character is null) return;
+        var dialog = new PortraitWindow(Portraits, character) { Owner = this };
+        if (dialog.ShowDialog() == true)
+        {
+            PortraitRefresh++;
+            model.AnnouncePortraitSaved(character.Name);
+        }
+        (sender as UIElement)?.Focus();
+    }
 
     private void SwitchCharacterExecuted(object sender, ExecutedRoutedEventArgs e)
     {

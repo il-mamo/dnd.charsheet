@@ -117,7 +117,7 @@ public sealed class CharacterDatabaseTests
     {
         Directory.CreateDirectory(Path.GetDirectoryName(PathToDatabase)!);
         using (var original = OpenRaw(PathToDatabase))
-            Execute(original, "CREATE TABLE future(value TEXT); INSERT INTO future VALUES ('untouched'); PRAGMA user_version=3;");
+            Execute(original, $"CREATE TABLE future(value TEXT); INSERT INTO future VALUES ('untouched'); PRAGMA user_version={CharacterDatabase.CurrentVersion + 1};");
         var before = File.ReadAllBytes(PathToDatabase);
         Assert.ThrowsExactly<InvalidOperationException>(() => new CharacterDatabase(PathToDatabase).Initialize());
         CollectionAssert.AreEqual(before, File.ReadAllBytes(PathToDatabase));
