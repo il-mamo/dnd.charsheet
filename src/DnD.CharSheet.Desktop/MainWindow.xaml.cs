@@ -13,12 +13,32 @@ public partial class MainWindow : Window
     public DnD.CharSheet.Application.ICharacterPortraits? Portraits { get; }
     public static readonly DependencyProperty PortraitRefreshProperty = DependencyProperty.Register(nameof(PortraitRefresh), typeof(int), typeof(MainWindow), new PropertyMetadata(0));
     public int PortraitRefresh { get => (int)GetValue(PortraitRefreshProperty); set => SetValue(PortraitRefreshProperty, value); }
-    public MainWindow(Func<Task> initialize, DnD.CharSheet.Application.ICharacterLibrary library, DnD.CharSheet.Application.ICharacterPortraits? portraits = null)
+    public MainWindow(Func<Task> initialize, DnD.CharSheet.Application.ICharacterLibrary library, DnD.CharSheet.Application.ICharacterPortraits? portraits = null, DnD.CharSheet.Application.IDraftRecovery? recovery = null)
     {
         Portraits = portraits;
         InitializeComponent();
-        var model = new ShellViewModel(initialize, library);
+        var model = new ShellViewModel(initialize, library, recovery);
         DataContext = model;
+        var closing = false;
+        var closeReady = false;
+        Closing += async (_, args) =>
+        {
+            if (closeReady) return;
+            args.Cancel = true;
+            if (closing) return;
+            closing = true;
+            try
+            {
+                if (await model.PrepareToCloseAsync())
+                {
+                    closeReady = true;
+                    // The drain can complete synchronously inside WPF's Closing event.
+                    // Re-enter Close only after that event has returned.
+                    await Dispatcher.InvokeAsync(new Action(Close));
+                }
+            }
+            finally { closing = false; }
+        };
         Loaded += async (_, _) => await model.InitializeCommand.ExecuteAsync(null);
         var focusedName = false;
         model.PropertyChanged += (_, args) =>
@@ -37,10 +57,10 @@ public partial class MainWindow : Window
                 Dispatcher.BeginInvoke(new Action(() =>
                     (UIElementAutomationPeer.FromElement(ActiveCharacterText) ?? UIElementAutomationPeer.CreatePeerForElement(ActiveCharacterText))?
                         .RaiseAutomationEvent(AutomationEvents.LiveRegionChanged)));
-            if (args.PropertyName is nameof(ShellViewModel.CreationStatus) or nameof(ShellViewModel.NameFeedback) or nameof(ShellViewModel.LibraryStatus))
+            if (args.PropertyName is nameof(ShellViewModel.CreationStatus) or nameof(ShellViewModel.NameFeedback) or nameof(ShellViewModel.LibraryStatus) or nameof(ShellViewModel.RecoveryStatus))
                 Dispatcher.BeginInvoke(new Action(() =>
                 {
-                    foreach (var element in new UIElement[] { CreationStatusText, NameFeedbackText, LibraryStatusText })
+                    foreach (var element in new UIElement[] { CreationStatusText, NameFeedbackText, LibraryStatusText, RecoveryStatusText })
                         (UIElementAutomationPeer.FromElement(element) ?? UIElementAutomationPeer.CreatePeerForElement(element))?
                             .RaiseAutomationEvent(AutomationEvents.LiveRegionChanged);
                 }));
