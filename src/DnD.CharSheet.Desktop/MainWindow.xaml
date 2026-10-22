@@ -57,12 +57,16 @@
       <TextBlock Text="New character draft" Style="{StaticResource SectionHeading}" Margin="0,0,0,12"/>
       <Label Target="{Binding ElementName=DraftNameBox}" Content="Character name (required)" FontSize="14" Foreground="{DynamicResource Brush.Text}" Padding="0" Margin="0,0,0,12"/>
       <TextBox x:Name="DraftNameBox" Text="{Binding DraftNameInput, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="Character name, required" AutomationProperties.HelpText="{Binding NameFeedback}" KeyDown="DraftNameKeyDown" Margin="0,0,0,12">
-       <TextBox.Style><Style TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}"><Style.Triggers><DataTrigger Binding="{Binding IsCreating}" Value="True"><Setter Property="IsEnabled" Value="False"/></DataTrigger></Style.Triggers></Style></TextBox.Style>
+       <TextBox.Style><Style TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}"><Setter Property="IsEnabled" Value="{Binding CanEditDraftName}"/></Style></TextBox.Style>
       </TextBox>
       <TextBlock x:Name="NameFeedbackText" Text="{Binding NameFeedback}" AutomationProperties.Name="Character name feedback" automation:AutomationProperties.LiveSetting="Polite" Margin="0,0,0,12">
        <TextBlock.Style><Style TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}"><Setter Property="Foreground" Value="{DynamicResource Brush.TextSecondary}"/><Style.Triggers><DataTrigger Binding="{Binding HasNameError}" Value="True"><Setter Property="Foreground" Value="{DynamicResource Brush.Danger}"/></DataTrigger></Style.Triggers></Style></TextBlock.Style>
       </TextBlock>
-      <Button Style="{StaticResource PrimaryButton}" Content="Create draft" AutomationProperties.Name="Create draft" Command="{Binding CreateDraftCommand}" HorizontalAlignment="Left"/>
+      <TextBlock x:Name="RecoveryStatusText" Text="{Binding RecoveryStatus}" FontSize="14" AutomationProperties.Name="Draft recovery status" automation:AutomationProperties.LiveSetting="Polite" Margin="0,0,0,12">
+       <TextBlock.Style><Style TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}"><Setter Property="Foreground" Value="{DynamicResource Brush.TextSecondary}"/><Style.Triggers><DataTrigger Binding="{Binding HasRecoveryError}" Value="True"><Setter Property="Foreground" Value="{DynamicResource Brush.Danger}"/></DataTrigger></Style.Triggers></Style></TextBlock.Style>
+      </TextBlock>
+      <Button Content="Retry" AutomationProperties.Name="Retry draft recovery" Command="{Binding RetryRecoveryCommand}" Visibility="{Binding HasRecoveryError, Converter={StaticResource BooleanVisibility}}" HorizontalAlignment="Left" Margin="0,0,0,12"/>
+      <Button Style="{StaticResource PrimaryButton}" Content="{Binding CreateDraftLabel}" AutomationProperties.Name="{Binding CreateDraftLabel}" Command="{Binding CreateDraftCommand}" HorizontalAlignment="Left"/>
       <TextBlock x:Name="CreationStatusText" Text="{Binding CreationStatus}" AutomationProperties.Name="Draft save status" automation:AutomationProperties.LiveSetting="Polite" Margin="0,12,0,0">
        <TextBlock.Style><Style TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}"><Style.Triggers><DataTrigger Binding="{Binding HasCreationError}" Value="True"><Setter Property="Foreground" Value="{DynamicResource Brush.Danger}"/></DataTrigger><DataTrigger Binding="{Binding HasCreationSucceeded}" Value="True"><Setter Property="Foreground" Value="{DynamicResource Brush.Success}"/></DataTrigger></Style.Triggers></Style></TextBlock.Style>
       </TextBlock>

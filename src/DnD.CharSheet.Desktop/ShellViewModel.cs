@@ -10,6 +10,115 @@ public sealed partial class ShellViewModel : ObservableObject
 {
     private readonly Func<Task> initialize;
     private readonly ICharacterLibrary library;
+    private readonly IDraftRecovery? recovery;
+    private bool recoveryLoaded;
+    private bool libraryLoaded;
+    private bool restoring;
+    private bool closing;
+    private CharacterId? submittedId;
+    private Task recoveryWrites = Task.CompletedTask;
+    private long recoveryVersion;
+    [ObservableProperty] private string recoveryStatus = "Loading draft recovery…";
+    [ObservableProperty] private bool hasRecoveryError;
+    public bool CanEditDraftName => recoveryLoaded && !IsCreating && !closing && submittedId is null;
+    public string CreateDraftLabel => submittedId is null ? "Create draft" : "Retry create";
+    partial void OnIsCreatingChanged(bool value) => OnPropertyChanged(nameof(CanEditDraftName));
+
+    partial void OnDraftNameInputChanged(string value)
+    {
+        if (restoring || recovery is null || !recoveryLoaded) return;
+        QueueRecoveryWrite(new DraftRecovery(value));
+    }
+
+    private void QueueRecoveryWrite(DraftRecovery snapshot)
+    {
+        var version = ++recoveryVersion;
+        RecoveryStatus = "Saving name…";
+        HasRecoveryError = false;
+        recoveryWrites = PersistNameAsync(recoveryWrites, snapshot, version);
+    }
+
+    private async Task PersistNameAsync(Task previous, DraftRecovery snapshot, long version)
+    {
+        await previous;
+        try
+        {
+            await recovery!.SaveAsync(snapshot);
+            if (version == recoveryVersion)
+            {
+                RecoveryStatus = "Name saved for recovery.";
+                HasRecoveryError = false;
+            }
+        }
+        catch (Exception)
+        {
+            if (version == recoveryVersion)
+            {
+                RecoveryStatus = "Name could not be saved for recovery.";
+                HasRecoveryError = true;
+            }
+        }
+    }
+
+    private async Task LoadRecoveryAsync()
+    {
+        if (recoveryLoaded) return;
+        try
+        {
+            var snapshot = recovery is null ? null : await recovery.LoadAsync();
+            restoring = true;
+            DraftNameInput = snapshot?.Name ?? "";
+            restoring = false;
+            submittedId = snapshot?.SubmittedId;
+            recoveryLoaded = true;
+            HasRecoveryError = false;
+            RecoveryStatus = snapshot is null ? "" : "Recovered your unfinished draft name.";
+            if (submittedId is not null)
+                CreationStatus = "Draft creation could not be confirmed. Retry to check and finish.";
+        }
+        catch (Exception)
+        {
+            RecoveryStatus = "Draft recovery could not be opened.";
+            HasRecoveryError = true;
+        }
+        finally
+        {
+            restoring = false;
+            OnPropertyChanged(nameof(CanEditDraftName));
+            OnPropertyChanged(nameof(CreateDraftLabel));
+            CanCreate = recoveryLoaded && libraryLoaded;
+        }
+    }
+
+    [RelayCommand]
+    private async Task RetryRecoveryAsync()
+    {
+        if (IsCreating || closing) return;
+        if (!recoveryLoaded) await LoadRecoveryAsync();
+        else if (submittedId is not null && CanCreate) await CreateDraftCommand.ExecuteAsync(null);
+        else if (submittedId is null)
+        {
+            QueueRecoveryWrite(new DraftRecovery(DraftNameInput));
+            await recoveryWrites;
+        }
+    }
+
+    public async Task<bool> PrepareToCloseAsync()
+    {
+        closing = true;
+        CanCreate = false;
+        OnPropertyChanged(nameof(CanEditDraftName));
+        if (!recoveryWrites.IsCompleted) RecoveryStatus = "Saving name before closing…";
+        if (CreateDraftCommand.ExecutionTask is { } creation) await creation;
+        await recoveryWrites;
+        // A failed load never modified the journal; it is safe to leave it untouched.
+        var safe = !recoveryLoaded || !HasRecoveryError;
+        closing = false;
+        CanCreate = recoveryLoaded && libraryLoaded;
+        OnPropertyChanged(nameof(CanEditDraftName));
+        return safe;
+    }
+
     private CharacterDraft? activeDraft;
     public CharacterDraft? ActiveDraft
     {
@@ -47,10 +156,11 @@ public sealed partial class ShellViewModel : ObservableObject
     private bool running;
     public ObservableCollection<CharacterDraft> Drafts { get; } = [];
 
-    public ShellViewModel(Func<Task> initialize, ICharacterLibrary library)
+    public ShellViewModel(Func<Task> initialize, ICharacterLibrary library, IDraftRecovery? recovery = null)
     {
         this.initialize = initialize;
         this.library = library;
+        this.recovery = recovery;
     }
 
     [RelayCommand]
@@ -76,6 +186,7 @@ public sealed partial class ShellViewModel : ObservableObject
         {
             await initialize();
             DatabaseStatus = "";
+            await LoadRecoveryAsync();
             await LoadLibraryAsync();
         }
         catch (Exception)
@@ -102,7 +213,8 @@ public sealed partial class ShellViewModel : ObservableObject
             Drafts.Clear();
             foreach (var draft in drafts) Drafts.Add(draft);
             LibraryStatus = Drafts.Count == 0 ? "No characters" : $"{Drafts.Count} saved incomplete drafts.";
-            CanCreate = true;
+            libraryLoaded = true;
+            CanCreate = recoveryLoaded;
         }
         catch (Exception)
         {
@@ -134,25 +246,55 @@ public sealed partial class ShellViewModel : ObservableObject
             CanCreate = false;
             IsCreating = true;
             CreationStatus = "Saving draft…";
+            submittedId ??= CharacterId.New();
+            OnPropertyChanged(nameof(CanEditDraftName));
+            OnPropertyChanged(nameof(CreateDraftLabel));
+            CharacterDraft? saved = null;
+            var intentPersisted = false;
             try
             {
-                var saved = await library.CreateDraftAsync(CharacterId.New(), rawName);
+                // All prior input writes finish before the durable submission replaces them.
+                await recoveryWrites;
+                if (recovery is not null)
+                    await recovery.SaveAsync(new DraftRecovery(rawName, submittedId));
+                intentPersisted = true;
+                RecoveryStatus = "Name saved for recovery.";
+                HasRecoveryError = false;
+                // A previous attempt may have committed before its result was observed.
+                saved = (await library.ListAsync()).FirstOrDefault(draft => draft.Id == submittedId);
+                if (saved is not null && saved.Name != DraftName.Normalize(rawName))
+                    throw new InvalidOperationException("Submitted identity has different metadata.");
+                saved ??= await library.CreateDraftAsync(submittedId, rawName);
+                if (!Drafts.Any(draft => draft.Id == saved.Id)) Drafts.Add(saved);
+                LibraryStatus = $"{Drafts.Count} saved incomplete drafts.";
+                CreationStatus = "Character saved. Finishing recovery…";
+                if (recovery is not null) await recovery.SaveAsync(null);
+                restoring = true;
                 DraftNameInput = "";
+                restoring = false;
+                submittedId = null;
+                RecoveryStatus = "";
                 HasCreationSucceeded = true;
                 CreationStatus = $"Draft “{saved.Name}” saved.";
-                // The durable result is shown even if a later library reload fails.
-                Drafts.Add(saved);
-                LibraryStatus = $"{Drafts.Count} saved incomplete drafts.";
             }
             catch (Exception)
             {
+                if (!intentPersisted)
+                {
+                    HasRecoveryError = true;
+                    RecoveryStatus = "Name could not be saved for recovery.";
+                }
                 HasCreationError = true;
-                CreationStatus = "Draft could not be saved. Your name is kept; try Create draft again.";
+                CreationStatus = saved is null
+                    ? "Draft creation could not be confirmed. Retry to check and finish."
+                    : "Character saved. Retry to finish recovery.";
             }
             finally
             {
                 IsCreating = false;
-                CanCreate = true;
+                CanCreate = recoveryLoaded && libraryLoaded;
+                OnPropertyChanged(nameof(CanEditDraftName));
+                OnPropertyChanged(nameof(CreateDraftLabel));
             }
             return;
         }

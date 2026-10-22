@@ -17,6 +17,6 @@ internal static class Program
         Theme.Apply(app.Resources);
         SystemParameters.StaticPropertyChanged += (_, _) => Theme.Apply(app.Resources);
         var database = new CharacterDatabase(CharacterDatabase.DefaultPath);
-        app.Run(new MainWindow(() => Task.Run(() => { database.Initialize(); }), new SqliteCharacterLibrary(database), new ManagedCharacterPortraits(database, System.IO.Path.Combine(System.IO.Path.GetDirectoryName(CharacterDatabase.DefaultPath)!, "portraits"))));
+        app.Run(new MainWindow(() => Task.Run(() => { database.Initialize(); }), new SqliteCharacterLibrary(database), new ManagedCharacterPortraits(database, System.IO.Path.Combine(System.IO.Path.GetDirectoryName(CharacterDatabase.DefaultPath)!, "portraits")), new FileDraftRecovery(System.IO.Path.Combine(System.IO.Path.GetDirectoryName(CharacterDatabase.DefaultPath)!, "draft-recovery.json"))));
     }
 }
