@@ -9,20 +9,25 @@ namespace DnD.CharSheet.Desktop;
 
 public partial class MainWindow : Window
 {
+    private readonly DnD.CharSheet.Application.IBackupService? backups;
+    private bool backupOpen;
     public static RoutedUICommand SwitchCharacterCommand { get; } = new("Switch character", nameof(SwitchCharacterCommand), typeof(MainWindow));
     public DnD.CharSheet.Application.ICharacterPortraits? Portraits { get; }
     public static readonly DependencyProperty PortraitRefreshProperty = DependencyProperty.Register(nameof(PortraitRefresh), typeof(int), typeof(MainWindow), new PropertyMetadata(0));
     public int PortraitRefresh { get => (int)GetValue(PortraitRefreshProperty); set => SetValue(PortraitRefreshProperty, value); }
-    public MainWindow(Func<Task> initialize, DnD.CharSheet.Application.ICharacterLibrary library, DnD.CharSheet.Application.ICharacterPortraits? portraits = null, DnD.CharSheet.Application.IDraftRecovery? recovery = null)
+    public MainWindow(Func<Task> initialize, DnD.CharSheet.Application.ICharacterLibrary library, DnD.CharSheet.Application.ICharacterPortraits? portraits = null, DnD.CharSheet.Application.IDraftRecovery? recovery = null, DnD.CharSheet.Application.IBackupService? backups = null)
     {
+        this.backups = backups;
         Portraits = portraits;
         InitializeComponent();
+        BackupsButton.IsEnabled = backups is not null;
         var model = new ShellViewModel(initialize, library, recovery);
         DataContext = model;
         var closing = false;
         var closeReady = false;
         Closing += async (_, args) =>
         {
+            if (backupOpen) { args.Cancel = true; return; }
             if (closeReady) return;
             args.Cancel = true;
             if (closing) return;
@@ -80,6 +85,34 @@ public partial class MainWindow : Window
     private void MinimizeClicked(object sender, RoutedEventArgs e) => WindowState = WindowState.Minimized;
 
     private void CloseClicked(object sender, RoutedEventArgs e) => Close();
+
+    private async void OpenBackups(object sender, RoutedEventArgs e)
+    {
+        if (backupOpen || backups is null || DataContext is not ShellViewModel model) return;
+        backupOpen = true;
+        IsEnabled = false;
+        try
+        {
+            // The owner remains unavailable while pending operations finish and throughout the modal.
+            foreach (var operation in new Task?[] { model.InitializeCommand.ExecutionTask, model.RetryLibraryCommand.ExecutionTask, model.RetryRecoveryCommand.ExecutionTask })
+                if (operation is not null) await operation;
+            if (!await model.PrepareToCloseAsync()) return;
+            var dialog = new BackupWindow(backups, model.HasFailed || model.CanRetryLibrary ? null : model.Drafts.Count) { Owner = this };
+            dialog.ShowDialog();
+            if (dialog.WasRestored)
+            {
+                await model.ReloadAfterRestoreAsync();
+                PortraitRefresh++;
+            }
+        }
+        catch (Exception) { model.AnnounceBackupFailure(); }
+        finally
+        {
+            IsEnabled = true;
+            backupOpen = false;
+            BackupsButton.Focus();
+        }
+    }
 
     private void ChangePortrait(object sender, RoutedEventArgs e)
     {

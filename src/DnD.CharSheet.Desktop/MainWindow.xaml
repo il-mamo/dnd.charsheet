@@ -15,6 +15,7 @@
   <Border Background="{DynamicResource Brush.Surface}" BorderBrush="{DynamicResource Brush.Divider}" BorderThickness="0,0,0,1">
    <DockPanel LastChildFill="True">
     <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+     <Button x:Name="BackupsButton" Content="Backups" Click="OpenBackups" MinHeight="32" Padding="12,0" Margin="0,0,12,0" AutomationProperties.Name="Backups for all characters"/>
      <Button Content="&#x2014;" Width="40" MinHeight="32" Padding="0" AutomationProperties.Name="Minimize" Click="MinimizeClicked"/>
      <Button Content="&#x00D7;" Width="40" MinHeight="32" Padding="0" AutomationProperties.Name="Close" Click="CloseClicked"/>
     </StackPanel>
