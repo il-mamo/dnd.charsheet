@@ -1,0 +1,37 @@
+<Window x:Class="DnD.CharSheet.Desktop.BackupWindow"
+ xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+ xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+ Title="Backups" Width="800" Height="680" ResizeMode="NoResize" WindowStartupLocation="CenterOwner"
+ Background="{DynamicResource Brush.Surface}" Foreground="{DynamicResource Brush.Text}"
+ FontFamily="{StaticResource Font.Body}" FontSize="16">
+ <Border Padding="24" BorderBrush="{DynamicResource Brush.Border}" BorderThickness="1" CornerRadius="8">
+ <Grid>
+  <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+  <StackPanel Margin="0,0,0,16">
+   <TextBlock Text="Backups" Style="{StaticResource SectionHeading}"/>
+   <TextBlock Text="All characters, portraits and draft recovery." Margin="0,8,0,0"/>
+  </StackPanel>
+  <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Focusable="False">
+   <StackPanel>
+    <TextBlock Text="Create backup" FontWeight="SemiBold"/>
+    <TextBlock Text="Save a copy of your current data." Margin="0,8,0,12"/>
+    <Button x:Name="Create" Content="Create backup…" Style="{StaticResource PrimaryButton}" Click="CreateBackup" HorizontalAlignment="Left"/>
+    <TextBlock Text="Restore backup" FontWeight="SemiBold" Margin="0,24,0,0"/>
+    <TextBlock Text="Replace current data with a saved backup." Margin="0,8,0,12"/>
+    <Button x:Name="Choose" Content="Choose backup…" Click="ChooseBackup" HorizontalAlignment="Left"/>
+    <Border x:Name="PreviewPanel" Visibility="Collapsed" Background="{DynamicResource Brush.SurfaceMuted}" BorderBrush="{DynamicResource Brush.Border}" BorderThickness="1" CornerRadius="8" Padding="16" Margin="0,16,0,0">
+     <StackPanel>
+      <TextBlock x:Name="PreviewText"/>
+      <TextBlock Text="Restoring replaces all current characters, portraits and draft recovery. A safety backup will be saved first." Foreground="{DynamicResource Brush.Warning}" Margin="0,16,0,0"/>
+     </StackPanel>
+    </Border>
+    <TextBlock x:Name="Status" AutomationProperties.Name="Backup status" AutomationProperties.LiveSetting="Polite" Margin="0,16,0,0"/>
+   </StackPanel>
+  </ScrollViewer>
+  <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,16,0,0">
+   <Button x:Name="Cancel" Content="Cancel" IsCancel="True" Click="CancelBackup" Margin="0,0,12,0"/>
+   <Button x:Name="Restore" Content="Restore backup" Click="RestoreBackup" IsEnabled="False" Background="{DynamicResource Brush.DangerFill}" Foreground="{DynamicResource Brush.OnAccent}"/>
+  </StackPanel>
+ </Grid>
+ </Border>
+</Window>

@@ -153,6 +153,23 @@ public sealed partial class ShellViewModel : ObservableObject
     [ObservableProperty] private string creationStatus = "";
     [ObservableProperty] private string libraryStatus = "Loading characters…";
     public void AnnouncePortraitSaved(string name) => LibraryStatus = $"Portrait for {name} saved.";
+    public void AnnounceBackupFailure() => LibraryStatus = "Backups could not be opened. Try again.";
+
+    public async Task ReloadAfterRestoreAsync()
+    {
+        // No old in-memory identity or unfinished input may write into the restored graph.
+        ActiveDraft = null;
+        Drafts.Clear();
+        recoveryLoaded = libraryLoaded = false;
+        submittedId = null;
+        restoring = true;
+        DraftNameInput = "";
+        restoring = false;
+        HasNameError = HasCreationError = HasCreationSucceeded = false;
+        CreationStatus = "";
+        NameFeedback = "Use 1–80 characters. Duplicate names are allowed.";
+        await InitializeAsync();
+    }
     private bool running;
     public ObservableCollection<CharacterDraft> Drafts { get; } = [];
 
