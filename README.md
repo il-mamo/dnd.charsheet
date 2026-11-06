@@ -4,7 +4,7 @@ Private-use, offline Windows 11 x64 character manager for D&D PHB 2024.
 
 The desktop app provides a local draft character library, character switching, managed portraits, draft recovery and versioned backup/restore. Rules and Adventure management remain planned; see docs/PROJECT_SUMMARY.md for verified state.
 
-Use .NET SDK **10.0.402** on Windows. The SDK is pinned in global.json; an IDE is optional. Initial restore requires network access. Run from the repository root:
+Use .NET SDK **10.0.403** on Windows. The SDK is pinned exactly in global.json; install that version locally. Windows CI reads global.json through actions/setup-dotnet, so future SDK upgrades should update this single version pin and the setup documentation together. An IDE is optional. Initial restore requires network access. Run from the repository root:
 
 ~~~powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts/Build.ps1 -Task Verify
