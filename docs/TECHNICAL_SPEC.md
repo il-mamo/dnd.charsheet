@@ -116,7 +116,7 @@ Persist each confirmed mutation atomically with affected resources/history. Prev
 
 
 ## 12. Adventures and player perspective - amendment 2026-10-20
-Status: R11 and player-only perspective confirmed by owner; not implemented. Existing library/switching acceptance predates Adventures and is not proof of R11 compliance.
+Status: R11 and player-only perspective confirmed by owner; Task 2.6 model/storage implemented (review recorded in tasks/2.6.md); visible enforcement remains Task 2.7. Existing library/switching acceptance predates Adventures and is not proof of R11 compliance.
 
 ### 12.1 Integrity and session behavior
 - Adventure is a first-class local entity with stable identity and editable display name. Assigned membership is single-valued; unassigned characters are retained but cannot be used. Adventure contains at least one character, counting drafts. Adventure creation includes its first character: atomically create a new character/draft or assign an existing unassigned character. Display names are not identity keys.
@@ -131,10 +131,12 @@ Status: R11 and player-only perspective confirmed by owner; not implemented. Exi
 ### 12.2 Confirmed lifecycle policy
 Owner confirmation (2026-10-20): create Adventure together with its first character. The first member may be a newly created character/draft or an existing unassigned character. Deleting an Adventure retains all characters with no Adventure assigned; they cannot be used until assignment. No cascade deletion. Existing pre-Adventure characters migrate without data loss into this unassigned management state and must be assigned before use; do not invent membership or silently create an Adventure. Migration uses a safety snapshot. Unassigned state is deliberate and distinct from a broken reference. Creation, deletion, assignment, transfer and restore must preserve these invariants transactionally.
 
+Owner decisions (2026-11-06, Task 2.6): live pre-Adventure data migrates to unassigned; older-schema backup archives are rejected with a compatibility message. Task 2.6 covers model/storage restrictions and backup validation; visible use restrictions, selection and Adventure-bound draft recovery are delivered in 2.7. The interim Desktop library does not yet enforce R11.
+
 ### 12.3 Bounded implementation queue and acceptance
 | Task | Scope / dependencies | Acceptance |
 |---|---|---|
-| 2.6 Adventure model and migration | R11/P01; existing storage/identity; confirmed lifecycle policy in 12.2 | Zero-or-one membership, unassigned-use restriction, nonempty Adventure invariant, stable IDs; migration preserves all characters/assets/state; failure leaves prior data intact; tests cover unassigned retention/use restriction, invalid assignment and rollback |
+| 2.6 Adventure model and migration (Verified model/storage, 2026-11-06; tasks/2.6.md) | R11/P01; existing storage/identity; confirmed lifecycle policy in 12.2 | Zero-or-one membership, unassigned-use restriction, nonempty Adventure invariant, stable IDs; migration preserves all characters/assets/state; failure leaves prior data intact; tests cover unassigned retention/use restriction, invalid assignment and rollback |
 | 2.7 Adventure selection and management | R11/R01/P06; 2.6 and approved design contract | Launch requires explicit selection even for one Adventure; create-with-first-character/rename/list/delete/assign, including preserved unassigned characters; roster/finder/switcher scope correct; switching preserves pending input and clears old active character; no DM-mode UI |
 | 2.8 Character transfer | R11/P01/P07; 2.6/2.7 and confirmed lifecycle policy | Move A to B once without changing character ID or state; cancel/failure/stale membership/duplicate confirm safe; last-member policy enforced; active character cleared in source; restart/backup/restore preserve membership |
 

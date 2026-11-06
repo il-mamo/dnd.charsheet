@@ -185,7 +185,7 @@ public sealed class FileBackupService(string dataDirectory) : IBackupService
             command.CommandText = "SELECT name FROM sqlite_schema WHERE name NOT LIKE 'sqlite_%' ORDER BY name";
             var objects = new List<string>();
             using (var r = command.ExecuteReader()) while (r.Read()) objects.Add(r.GetString(0));
-            if (!objects.SequenceEqual(new[] { "character_drafts", "character_portraits", "characters" })) throw new InvalidDataException("Unsupported database schema.");
+            if (!objects.SequenceEqual(new[] { "adventure_memberships", "adventures", "character_drafts", "character_portraits", "characters" })) throw new InvalidDataException("Unsupported database schema.");
             // Compare exact schema against a fresh supported database, rejecting triggers/views/changed constraints.
             var reference = Path.Combine(stage, "schema-check.db");
             try
@@ -200,6 +200,14 @@ public sealed class FileBackupService(string dataDirectory) : IBackupService
                     if (!expectedReader.Read() || actualReader.GetString(0) != expectedReader.GetString(0)) throw new InvalidDataException("Unsupported database schema.");
             }
             finally { File.Delete(reference); }
+            command.CommandText = "SELECT id, name FROM adventures";
+            using (var reader = command.ExecuteReader())
+                while (reader.Read())
+                {
+                    var id = reader.GetString(0);
+                    if (!Guid.TryParseExact(id, "D", out var guid) || guid == Guid.Empty || id != guid.ToString("D") || DraftName.Normalize(reader.GetString(1)) != reader.GetString(1))
+                        throw new InvalidDataException("Invalid Adventure data.");
+                }
             command.CommandText = "SELECT c.id, c.revision, d.name FROM characters c LEFT JOIN character_drafts d ON d.character_id=c.id ORDER BY c.id";
             var names = new List<string>();
             using (var reader = command.ExecuteReader())
@@ -224,8 +232,3 @@ public sealed class FileBackupService(string dataDirectory) : IBackupService
         }
     }
 }
-
-
-
-
-

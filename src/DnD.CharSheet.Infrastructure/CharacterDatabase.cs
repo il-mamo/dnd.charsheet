@@ -5,7 +5,7 @@ namespace DnD.CharSheet.Infrastructure;
 /// <summary>Startup-only schema initialization. Call off the UI thread before opening repositories.</summary>
 public sealed class CharacterDatabase
 {
-    public const int CurrentVersion = 3;
+    public const int CurrentVersion = 4;
     private readonly string databasePath;
 
     public CharacterDatabase(string databasePath)
@@ -100,6 +100,8 @@ public sealed class CharacterDatabase
             """;
         migration.ExecuteNonQuery();
         }
+        if (version < 3)
+        {
         migration.CommandText = """
             CREATE TABLE character_portraits (
                 character_id TEXT NOT NULL PRIMARY KEY REFERENCES characters(id) ON DELETE CASCADE,
@@ -108,6 +110,32 @@ public sealed class CharacterDatabase
             PRAGMA user_version = 3;
             """;
         migration.ExecuteNonQuery();
+        }
+        if (version < 4)
+        {
+            migration.CommandText = """
+                CREATE TABLE adventures (
+                    id TEXT NOT NULL PRIMARY KEY CHECK (
+                        length(id) = 36 AND id = lower(id) AND
+                        substr(id, 9, 1) = '-' AND substr(id, 14, 1) = '-' AND
+                        substr(id, 19, 1) = '-' AND substr(id, 24, 1) = '-' AND
+                        length(replace(id, '-', '')) = 32 AND
+                        replace(id, '-', '') NOT GLOB '*[^0-9a-f]*' AND
+                        id <> '00000000-0000-0000-0000-000000000000'),
+                    name TEXT NOT NULL CHECK (length(name) BETWEEN 1 AND 80 AND name = trim(name)),
+                    first_character_id TEXT NOT NULL,
+                    FOREIGN KEY (id, first_character_id) REFERENCES adventure_memberships(adventure_id, character_id)
+                        DEFERRABLE INITIALLY DEFERRED
+                ) STRICT;
+                CREATE TABLE adventure_memberships (
+                    character_id TEXT NOT NULL PRIMARY KEY REFERENCES characters(id),
+                    adventure_id TEXT NOT NULL REFERENCES adventures(id) ON DELETE CASCADE,
+                    UNIQUE (adventure_id, character_id)
+                ) STRICT;
+                PRAGMA user_version = 4;
+                """;
+            migration.ExecuteNonQuery();
+        }
         transaction.Commit();
         return backupPath;
     }
