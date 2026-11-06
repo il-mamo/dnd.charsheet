@@ -4,7 +4,7 @@ Baseline date: 2026-10-20. Scope: technical specification D2/D3, sections 2, 5, 
 
 ## Toolchain
 
-Windows 11 x64; installed SDK 10.0.402 and Windows Desktop runtime 10.0.13 verified with `dotnet --info`. Pin the SDK exactly in `global.json`. Use SDK-default stable C# language version, nullable references, implicit usings, deterministic builds and warnings as errors. No workloads or IDE are required by the intended CLI workflow; WPF and MSTest templates were listed successfully using a repository-local CLI home; task 1.1 now verifies Release compilation with zero warnings/errors; independent clean-copy evidence is recorded in docs/tasks/1.1.test.md.
+Windows 11 x64; installed SDK 10.0.403 and Windows Desktop runtime 10.0.13 verified with `dotnet --info`. Pin the SDK exactly in `global.json`. Use SDK-default stable C# language version, nullable references, implicit usings, deterministic builds and warnings as errors. No workloads or IDE are required by the intended CLI workflow; WPF and MSTest templates were listed successfully using a repository-local CLI home; task 1.1 now verifies Release compilation with zero warnings/errors; independent clean-copy evidence is recorded in docs/tasks/1.1.test.md.
 
 .NET 10 is LTS, supported through November 2028 according to the [official support policy](https://dotnet.microsoft.com/en-us/platform/support/policy). Updating SDK/runtime pins is an explicit maintenance change with restore/build/test/publish verification; self-contained deployments must be republished to receive runtime fixes.
 
@@ -61,6 +61,6 @@ Manual update: close the app, preserve a consistent backup, extract the new rele
 
 Create the projects above, SDK-based WPF project with `UseWPF=true`, test runner configuration compatible with the pinned MSTest package, solution and Windows CI. Introduce no visible shell until task 1.4 has its design handoff; validate desktop compilation without treating it as launch acceptance.
 
-Add checked-in build commands/scripts for restore, Release build, tests and packaging. CI uses Windows, installs SDK 10.0.402, performs locked restore, builds and runs tests. Generate initial lock files in a normal restore before enabling locked mode. Publish the approved self-contained ZIP. CI must use synthetic fixtures and no PHB/private catalog.
+Add checked-in build commands/scripts for restore, Release build, tests and packaging. CI uses Windows, installs the SDK selected by global.json (currently 10.0.403) through actions/setup-dotnet's global-json-file input, performs locked restore, builds and runs tests. Keep local installations and setup documentation aligned with that exact pin when upgrading. Generate initial lock files in a normal restore before enabling locked mode. Publish the approved self-contained ZIP. CI must use synthetic fixtures and no PHB/private catalog.
 
 Acceptance: clean-checkout commands execute on Windows; project-reference checks enforce the table; build/tests pass; published SQLite native assets are present and smoke-tested when a consuming behavior exists. App launch and fresh/existing DB behavior remain the wider phase 1 gate, not task 0.3 claims.
