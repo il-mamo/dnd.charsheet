@@ -116,7 +116,7 @@ public sealed class ManagedCharacterPortraitsTests
     public async Task VersionTwoMigrationPreservesIdentityNameRevisionAndPreupgradeBackup()
     {
         var id = await Create();
-        Execute("DROP TABLE character_portraits; PRAGMA user_version=2; UPDATE characters SET revision=17;");
+        Execute("DROP TABLE adventures; DROP TABLE adventure_memberships; DROP TABLE character_portraits; PRAGMA user_version=2; UPDATE characters SET revision=17;");
         var backup = database.Initialize();
         Assert.IsNotNull(backup);
         using (var snapshot = new SqliteConnection(new SqliteConnectionStringBuilder { DataSource = backup, Pooling = false }.ToString()))
