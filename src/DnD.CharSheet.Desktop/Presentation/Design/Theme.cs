@@ -20,6 +20,12 @@ internal static class Theme
                 };
             resources["Brush." + name] = new SolidColorBrush(color);
         }
+        if (SystemParameters.HighContrast)
+        {
+            resources["Brush.TopBar"] = SystemColors.WindowBrush;
+            resources["Brush.TopBarRule"] = SystemColors.WindowTextBrush;
+            resources["Brush.TopBarShadow"] = SystemColors.WindowBrush;
+        }
     }
 }
 
