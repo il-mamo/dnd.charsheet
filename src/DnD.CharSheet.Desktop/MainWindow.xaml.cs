@@ -11,6 +11,7 @@ public partial class MainWindow : Window
 {
     private readonly DnD.CharSheet.Application.IBackupService? backups;
     private bool backupOpen;
+    private bool transferOpen;
     public static RoutedUICommand SwitchCharacterCommand { get; } = new("Switch character", nameof(SwitchCharacterCommand), typeof(MainWindow));
     public DnD.CharSheet.Application.ICharacterPortraits? Portraits { get; }
     public static readonly DependencyProperty PortraitRefreshProperty = DependencyProperty.Register(nameof(PortraitRefresh), typeof(int), typeof(MainWindow), new PropertyMetadata(0));
@@ -27,7 +28,7 @@ public partial class MainWindow : Window
         var closeReady = false;
         Closing += async (_, args) =>
         {
-            if (backupOpen) { args.Cancel = true; return; }
+            if (backupOpen || transferOpen) { args.Cancel = true; return; }
             if (closeReady) return;
             args.Cancel = true;
             if (closing) return;
@@ -88,7 +89,7 @@ public partial class MainWindow : Window
 
     private async void OpenBackups(object sender, RoutedEventArgs e)
     {
-        if (backupOpen || backups is null || DataContext is not ShellViewModel model) return;
+        if (backupOpen || transferOpen || backups is null || DataContext is not ShellViewModel model) return;
         backupOpen = true;
         IsEnabled = false;
         try
@@ -111,6 +112,33 @@ public partial class MainWindow : Window
             IsEnabled = true;
             backupOpen = false;
             BackupsButton.Focus();
+        }
+    }
+
+    public async void TransferCharacter(object sender, RoutedEventArgs e)
+    {
+        if (transferOpen || backupOpen || DataContext is not ShellViewModel shell ||
+            (sender as FrameworkElement)?.DataContext is not DnD.CharSheet.Application.CharacterDraft character) return;
+        transferOpen = true;
+        TransferPreview? preview = null;
+        try
+        {
+            preview = await shell.BeginTransferAsync(character);
+            if (preview is null) return;
+            var dialog = new TransferWindow(shell, preview, Portraits) { Owner = this };
+            dialog.ShowDialog();
+            shell.EndTransfer(preview, dialog.ManageSource);
+            preview = null;
+            if (sender is not UIElement { IsVisible: true } element || !element.Focus())
+            {
+                if (shell.ShowAdventurePanel) AdventureRoster.Focus();
+                else SavedCharactersHeading.Focus();
+            }
+        }
+        finally
+        {
+            if (preview is not null) shell.EndTransfer(preview, false);
+            transferOpen = false;
         }
     }
 

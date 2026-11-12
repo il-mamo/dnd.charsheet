@@ -80,7 +80,7 @@
    <Border Grid.Column="2" Style="{StaticResource SectionPanel}">
     <DockPanel>
      <StackPanel DockPanel.Dock="Top">
-      <TextBlock Text="Saved characters" Style="{StaticResource SectionHeading}"/>
+      <TextBlock x:Name="SavedCharactersHeading" Focusable="True" Text="Saved characters" Style="{StaticResource SectionHeading}"/>
       <TextBlock x:Name="LibraryStatusText" Text="{Binding LibraryStatus}" AutomationProperties.Name="Character library status" automation:AutomationProperties.LiveSetting="Polite" Margin="0,12,0,12"/>
       <Button Content="Retry" AutomationProperties.Name="Retry character library" Command="{Binding RetryLibraryCommand}" Visibility="{Binding CanRetryLibrary, Converter={StaticResource BooleanVisibility}}" HorizontalAlignment="Left" Margin="0,0,0,12"/>
      </StackPanel>
@@ -115,6 +115,9 @@
           <Button Content="Change portrait" Click="ChangePortrait" HorizontalAlignment="Stretch" Margin="0,8,0,0">
            <AutomationProperties.Name><MultiBinding StringFormat="Change portrait for {0}"><Binding Path="Name"/></MultiBinding></AutomationProperties.Name>
           </Button>
+          <Button Content="Transfer…" Click="TransferCharacter" HorizontalAlignment="Stretch" Margin="0,8,0,0">
+           <AutomationProperties.Name><Binding Path="Name" StringFormat="Transfer {0}"/></AutomationProperties.Name>
+          </Button>
          </StackPanel>
         </Border>
        </DataTemplate></ItemsControl.ItemTemplate>
@@ -123,6 +126,6 @@
     </DockPanel>
    </Border>
   </Grid>
-  <local:AdventurePanel Grid.Row="2" Margin="24" Visibility="{Binding ShowAdventurePanel, Converter={StaticResource BooleanVisibility}}"/>
+  <local:AdventurePanel x:Name="AdventureRoster" Focusable="True" Grid.Row="2" Margin="24" Visibility="{Binding ShowAdventurePanel, Converter={StaticResource BooleanVisibility}}"/>
  </Grid>
 </Window>

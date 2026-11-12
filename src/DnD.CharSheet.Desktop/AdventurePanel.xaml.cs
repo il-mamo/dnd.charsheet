@@ -81,6 +81,11 @@ public partial class AdventurePanel : UserControl
         }
     }
 
+    private void TransferMember(object sender, RoutedEventArgs e)
+    {
+        if (Window.GetWindow(this) is MainWindow window) window.TransferCharacter(sender, e);
+    }
+
     private void ClearUnassigned(object sender, RoutedEventArgs e)
     {
         if (DataContext is ShellViewModel shell) shell.SelectedUnassigned = null;

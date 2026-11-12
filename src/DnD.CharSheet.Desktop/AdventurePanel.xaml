@@ -181,12 +181,16 @@
             <Grid.ColumnDefinitions>
              <ColumnDefinition Width="60" />
              <ColumnDefinition Width="*" />
+             <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
             <local:PortraitThumbnail Width="48" Height="48" CharacterId="{Binding Id}" Portraits="{Binding Portraits, RelativeSource={RelativeSource AncestorType=Window}}" Refresh="{Binding PortraitRefresh, RelativeSource={RelativeSource AncestorType=Window}}" Margin="0,0,12,0" />
             <StackPanel Grid.Column="1" VerticalAlignment="Center">
              <TextBlock Text="{Binding Name}" TextWrapping="Wrap" />
              <TextBlock Text="Incomplete draft" FontSize="13" Foreground="{DynamicResource Brush.TextSecondary}" />
             </StackPanel>
+            <Button Grid.Column="2" Content="Transfer…" Click="TransferMember" Margin="8,0,0,0">
+             <AutomationProperties.Name><Binding Path="Name" StringFormat="Transfer {0}"/></AutomationProperties.Name>
+            </Button>
            </Grid>
           </DataTemplate>
          </ItemsControl.ItemTemplate>

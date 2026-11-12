@@ -13,6 +13,7 @@ public interface IAdventureRepository
     Task CreateWithUnassignedAsync(AdventureId id, string name, CharacterId firstMember, CancellationToken cancellationToken = default);
     Task CreateWithDraftAsync(AdventureId id, string name, CharacterId firstMember, string characterName, CancellationToken cancellationToken = default);
     Task AssignAsync(CharacterId unassignedCharacter, AdventureId destination, CancellationToken cancellationToken = default);
+    Task TransferAsync(CharacterId character, AdventureId source, AdventureId destination, CancellationToken cancellationToken = default);
     Task RenameAsync(AdventureId id, string name, CancellationToken cancellationToken = default);
     Task DeleteAsync(AdventureId id, CancellationToken cancellationToken = default);
 }
