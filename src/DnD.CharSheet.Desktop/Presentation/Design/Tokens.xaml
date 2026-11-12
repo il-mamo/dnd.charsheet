@@ -18,6 +18,16 @@
 <Color x:Key="Color.Warning">#E5BE74</Color>
 <Color x:Key="Color.Danger">#FF9C9E</Color>
 <Color x:Key="Color.Brass">#B89A60</Color>
+<Color x:Key="Color.TopBarTop">#162731</Color>
+<Color x:Key="Color.TopBarBottom">#0B171D</Color>
+<Color x:Key="Color.TopBarRule">#66737D</Color>
+<Color x:Key="Color.TopBarShadow">#05090C</Color>
+<LinearGradientBrush x:Key="Brush.TopBar" StartPoint="0,0" EndPoint="0,1">
+ <GradientStop Color="{StaticResource Color.TopBarTop}" Offset="0"/>
+ <GradientStop Color="{StaticResource Color.TopBarBottom}" Offset="1"/>
+</LinearGradientBrush>
+<SolidColorBrush x:Key="Brush.TopBarRule" Color="{StaticResource Color.TopBarRule}"/>
+<SolidColorBrush x:Key="Brush.TopBarShadow" Color="{StaticResource Color.TopBarShadow}"/>
 <sys:Double x:Key="Space.4">4</sys:Double>
 <sys:Double x:Key="Space.8">8</sys:Double>
 <sys:Double x:Key="Space.12">12</sys:Double>
@@ -96,6 +106,46 @@
    <ControlTemplate.Triggers>
     <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Frame" Property="Background" Value="{DynamicResource Brush.AccentHover}"/></Trigger>
     <Trigger Property="IsPressed" Value="True"><Setter TargetName="Frame" Property="Background" Value="{DynamicResource Brush.AccentPressed}"/></Trigger>
+    <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="FocusRing" Property="Visibility" Value="Visible"/></Trigger>
+   </ControlTemplate.Triggers>
+  </ControlTemplate></Setter.Value></Setter>
+ </Style>
+ <Style x:Key="TopBarButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+  <Setter Property="MinHeight" Value="26"/><Setter Property="Height" Value="26"/><Setter Property="Width" Value="128"/>
+  <Setter Property="Padding" Value="12,0"/><Setter Property="Background" Value="Transparent"/>
+  <Setter Property="FontFamily" Value="{StaticResource Font.Heading}"/><Setter Property="FontSize" Value="13"/><Setter Property="FontWeight" Value="Normal"/>
+  <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Button">
+   <Grid><Border x:Name="Frame" CornerRadius="3" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}">
+    <ContentPresenter Margin="{TemplateBinding Padding}" HorizontalAlignment="Center" VerticalAlignment="Center" RecognizesAccessKey="True"/>
+   </Border><Border x:Name="FocusRing" Margin="1" IsHitTestVisible="False" CornerRadius="2" BorderThickness="{StaticResource Border.Focus}" BorderBrush="{DynamicResource Brush.Focus}" Visibility="Collapsed"/></Grid>
+   <ControlTemplate.Triggers>
+    <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Frame" Property="Background" Value="{DynamicResource Brush.Selection}"/></Trigger>
+    <Trigger Property="IsPressed" Value="True"><Setter TargetName="Frame" Property="Background" Value="{DynamicResource Brush.Canvas}"/></Trigger>
+    <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="FocusRing" Property="Visibility" Value="Visible"/></Trigger>
+    <Trigger Property="IsEnabled" Value="False"><Setter Property="Foreground" Value="{DynamicResource Brush.TextSecondary}"/><Setter TargetName="Frame" Property="BorderBrush" Value="{DynamicResource Brush.Divider}"/></Trigger>
+   </ControlTemplate.Triggers>
+  </ControlTemplate></Setter.Value></Setter>
+ </Style>
+ <Style x:Key="WindowChromeButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+  <Setter Property="Width" Value="40"/><Setter Property="Height" Value="32"/><Setter Property="MinHeight" Value="32"/><Setter Property="Padding" Value="0"/>
+  <Setter Property="Background" Value="Transparent"/><Setter Property="BorderThickness" Value="0"/><Setter Property="FontFamily" Value="Segoe UI Symbol, Segoe UI"/>
+  <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Button">
+   <Grid><Border x:Name="Frame" Background="{TemplateBinding Background}"><ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/></Border>
+    <Border x:Name="FocusRing" Margin="2" IsHitTestVisible="False" BorderThickness="{StaticResource Border.Focus}" BorderBrush="{DynamicResource Brush.Focus}" Visibility="Collapsed"/></Grid>
+   <ControlTemplate.Triggers>
+    <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Frame" Property="Background" Value="{DynamicResource Brush.Selection}"/></Trigger>
+    <Trigger Property="IsPressed" Value="True"><Setter TargetName="Frame" Property="Background" Value="{DynamicResource Brush.Canvas}"/></Trigger>
+    <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="FocusRing" Property="Visibility" Value="Visible"/></Trigger>
+   </ControlTemplate.Triggers>
+  </ControlTemplate></Setter.Value></Setter>
+ </Style>
+ <Style x:Key="CloseWindowChromeButton" TargetType="Button" BasedOn="{StaticResource WindowChromeButton}">
+  <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Button">
+   <Grid><Border x:Name="Frame" Background="{TemplateBinding Background}"><ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/></Border>
+    <Border x:Name="FocusRing" Margin="2" IsHitTestVisible="False" BorderThickness="{StaticResource Border.Focus}" BorderBrush="{DynamicResource Brush.Focus}" Visibility="Collapsed"/></Grid>
+   <ControlTemplate.Triggers>
+    <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Frame" Property="Background" Value="{DynamicResource Brush.DangerFill}"/></Trigger>
+    <Trigger Property="IsPressed" Value="True"><Setter TargetName="Frame" Property="Background" Value="{DynamicResource Brush.Canvas}"/></Trigger>
     <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="FocusRing" Property="Visibility" Value="Visible"/></Trigger>
    </ControlTemplate.Triggers>
   </ControlTemplate></Setter.Value></Setter>

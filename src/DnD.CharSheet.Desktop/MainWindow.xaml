@@ -12,15 +12,44 @@
  <Window.CommandBindings><CommandBinding Command="{x:Static local:MainWindow.SwitchCharacterCommand}" Executed="SwitchCharacterExecuted"/></Window.CommandBindings>
  <Grid>
   <Grid.RowDefinitions><RowDefinition Height="32"/><RowDefinition Height="144"/><RowDefinition Height="*"/></Grid.RowDefinitions>
-  <Border Background="{DynamicResource Brush.Surface}" BorderBrush="{DynamicResource Brush.Divider}" BorderThickness="0,0,0,1">
-   <DockPanel LastChildFill="True">
-    <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
-     <Button x:Name="BackupsButton" Content="Backups" Click="OpenBackups" MinHeight="32" Padding="12,0" Margin="0,0,12,0" AutomationProperties.Name="Backups for all characters"/>
-     <Button Content="&#x2014;" Width="40" MinHeight="32" Padding="0" AutomationProperties.Name="Minimize" Click="MinimizeClicked"/>
-     <Button Content="&#x00D7;" Width="40" MinHeight="32" Padding="0" AutomationProperties.Name="Close" Click="CloseClicked"/>
-    </StackPanel>
-    <TextBlock Text="DnD.CharSheet" Margin="24,0" VerticalAlignment="Center" FontFamily="{StaticResource Font.Heading}"/>
-   </DockPanel>
+  <Border Background="{DynamicResource Brush.TopBar}" ClipToBounds="True">
+   <Grid>
+    <Grid.RowDefinitions><RowDefinition Height="30"/><RowDefinition Height="1"/><RowDefinition Height="1"/></Grid.RowDefinitions>
+    <Grid Grid.RowSpan="3" Margin="12,0">
+     <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+      <Grid Width="18" Height="18" IsHitTestVisible="False">
+       <Ellipse Fill="{DynamicResource Brush.AccentPressed}" Stroke="{DynamicResource Brush.AccentHover}" StrokeThickness="1"/>
+       <Path Data="M9,3 L13,9 9,15 5,9 Z M9,5.5 L7,9 9,12.5" Stroke="{DynamicResource Brush.Text}" StrokeThickness="1" Fill="Transparent" StrokeLineJoin="Round"/>
+      </Grid>
+      <TextBlock Text="DnD.CharSheet" Margin="8,0,0,0" VerticalAlignment="Center" FontFamily="{StaticResource Font.Heading}" FontSize="15" FontWeight="Bold" TextWrapping="NoWrap"/>
+      <TextBlock Text="File" Margin="28,0,0,0" VerticalAlignment="Center" FontFamily="{StaticResource Font.Heading}" FontSize="13" TextWrapping="NoWrap" IsHitTestVisible="False"/>
+      <TextBlock Text="Character" Margin="24,0,0,0" VerticalAlignment="Center" FontFamily="{StaticResource Font.Heading}" FontSize="13" TextWrapping="NoWrap" IsHitTestVisible="False"/>
+      <TextBlock Text="Help" Margin="24,0,0,0" VerticalAlignment="Center" FontFamily="{StaticResource Font.Heading}" FontSize="13" TextWrapping="NoWrap" IsHitTestVisible="False"/>
+     </StackPanel>
+     <Viewbox Grid.Column="1" Width="16" Height="16" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="Uniform" IsHitTestVisible="False">
+      <Canvas Width="16" Height="16">
+       <Path Data="M8,0 L8,16 M0,8 L16,8 M8,4 L12,8 8,12 4,8 Z" Stroke="{DynamicResource Brush.Brass}" StrokeThickness="1" Fill="Transparent"/>
+       <Path Data="M8,6 L10,8 8,10 6,8 Z" Fill="{DynamicResource Brush.Brass}"/>
+      </Canvas>
+     </Viewbox>
+     <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+      <Button x:Name="BackupsButton" Visibility="Collapsed" IsTabStop="False" Content="Backups" Click="OpenBackups" AutomationProperties.Name="Backups for all characters"/>
+      <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,12,0" Visibility="{Binding ShowCharacterLibrary, Converter={StaticResource BooleanVisibility}}">
+       <TextBlock Text="Adventure:" VerticalAlignment="Center" FontFamily="{StaticResource Font.Heading}" FontSize="13" Foreground="{DynamicResource Brush.TextSecondary}" TextWrapping="NoWrap"/>
+       <TextBlock Text="{Binding AdventureHeading}" ToolTip="{Binding AdventureHeading}" AutomationProperties.Name="{Binding AdventureHeading, StringFormat=Adventure: {0}}" Margin="8,0,0,0" MaxWidth="260" VerticalAlignment="Center" FontFamily="{StaticResource Font.Heading}" FontSize="14" FontWeight="Bold" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis"/>
+       <Button Command="{Binding ReturnToSelectionCommand}" Margin="20,0,0,0" AutomationProperties.Name="Change Adventure">
+        <Button.Style><Style TargetType="Button" BasedOn="{StaticResource TopBarButton}"><Style.Triggers><DataTrigger Binding="{Binding IsAdventureBusy}" Value="True"><Setter Property="IsEnabled" Value="False"/></DataTrigger></Style.Triggers></Style></Button.Style>
+        <TextBlock Text="Change Adventure" TextWrapping="NoWrap"/>
+       </Button>
+      </StackPanel>
+      <Button Content="&#x2014;" Style="{StaticResource WindowChromeButton}" FontSize="14" AutomationProperties.Name="Minimize window" Click="MinimizeClicked"/>
+      <Button Content="&#x00D7;" Style="{StaticResource CloseWindowChromeButton}" FontSize="20" AutomationProperties.Name="Close window" Click="CloseClicked"/>
+     </StackPanel>
+    </Grid>
+    <Border Grid.Row="1" Background="{DynamicResource Brush.TopBarShadow}"/>
+    <Border Grid.Row="2" Background="{DynamicResource Brush.TopBarRule}"/>
+   </Grid>
   </Border>
   <Border Grid.Row="1" Padding="24,12" BorderBrush="{DynamicResource Brush.Brass}" BorderThickness="0,0,0,1">
    <Grid>
@@ -28,7 +57,7 @@
     <StackPanel VerticalAlignment="Center">
      <TextBlock Text="PLAYER'S HANDBOOK 2024" FontSize="13" Foreground="{DynamicResource Brush.TextSecondary}"/>
      <TextBlock Text="{Binding AdventureHeading}" ToolTip="{Binding AdventureHeading}" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" Style="{StaticResource Heading}" Margin="0,4,0,6"/>
-     <StackPanel Orientation="Horizontal" Margin="0,0,0,4" Visibility="{Binding ShowCharacterLibrary, Converter={StaticResource BooleanVisibility}}"><Button Content="Change Adventure" Command="{Binding ReturnToSelectionCommand}" Margin="0,0,12,0"/><Button Content="Manage Adventures" Command="{Binding ReturnToSelectionCommand}"/></StackPanel>
+     <StackPanel Orientation="Horizontal" Margin="0,0,0,4" Visibility="{Binding ShowCharacterLibrary, Converter={StaticResource BooleanVisibility}}"><Button Content="Manage Adventures" Command="{Binding ReturnToSelectionCommand}"/></StackPanel>
      <Border Height="1" Width="120" Background="{DynamicResource Brush.Brass}" HorizontalAlignment="Left"/>
     </StackPanel>
     <Grid Grid.Column="1" VerticalAlignment="Center" Visibility="{Binding ShowCharacterLibrary, Converter={StaticResource BooleanVisibility}}">
