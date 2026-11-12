@@ -26,6 +26,27 @@ public sealed class CharacterLibraryTests
     public void CleanUp() => Directory.Delete(directory, recursive: true);
 
     [TestMethod]
+    public async Task ScopedDraftCreationCommitsMembershipAndMissingDestinationRollsBackEverything()
+    {
+        var adventures = new SqliteAdventureRepository(database);
+        var destination = AdventureId.New();
+        await adventures.CreateWithDraftAsync(destination, "Destination", CharacterId.New(), "First");
+        var id = CharacterId.New();
+        var created = await library.CreateDraftInAdventureAsync(id, "  Second  ", destination);
+        Assert.AreEqual("Second", created.Name);
+        (await adventures.GetMembershipAsync(id)).RequireUsableIn(destination);
+        var missing = CharacterId.New();
+        await Assert.ThrowsExactlyAsync<SqliteException>(() => library.CreateDraftInAdventureAsync(missing, "Missing", AdventureId.New()));
+        Assert.IsNull(await new SqliteCharacterRepository(database).GetAsync(missing));
+        await Assert.ThrowsExactlyAsync<CharacterConflictException>(() => library.CreateDraftInAdventureAsync(id, "Duplicate", destination));
+        Assert.HasCount(2, await library.ListAsync());
+        await adventures.DeleteAsync(destination);
+        var deleted = CharacterId.New();
+        await Assert.ThrowsExactlyAsync<SqliteException>(() => library.CreateDraftInAdventureAsync(deleted, "Deleted", destination));
+        Assert.IsNull(await new SqliteCharacterRepository(database).GetAsync(deleted));
+    }
+
+    [TestMethod]
     public async Task InvalidNamesCannotCreateAnyIdentityOrMetadata()
     {
         foreach (var name in new string?[] { null, "", "   ", new('x', 81), "\tValid", "Valid\n", "A\0B", "A\u007fB", "A\u0085B" })

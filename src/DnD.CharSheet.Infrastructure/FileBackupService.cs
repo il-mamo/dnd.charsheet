@@ -227,7 +227,9 @@ public sealed class FileBackupService(string dataDirectory) : IBackupService
             var expectedAssets = ReadAssets(path).Select(t => t + ".png").Order().ToArray();
             var portraitDirectory = Path.Combine(stage, "portraits");
             if (System.IO.Directory.Exists(portraitDirectory) && !System.IO.Directory.GetFiles(portraitDirectory).Select(Path.GetFileName).Order().SequenceEqual(expectedAssets)) throw new InvalidDataException("Backup contains unreferenced portraits.");
-            new FileDraftRecovery(Path.Combine(stage, "draft-recovery.json")).LoadAsync().GetAwaiter().GetResult();
+            // Recovery contexts can deliberately outlive Adventure deletion. Validate every entry,
+            // retaining those contexts as unavailable recovery rather than inventing membership.
+            new FileDraftRecovery(Path.Combine(stage, "draft-recovery.json")).LoadAllAsync().GetAwaiter().GetResult();
             return names.ToArray();
         }
     }

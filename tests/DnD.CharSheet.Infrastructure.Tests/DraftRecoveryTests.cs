@@ -13,6 +13,37 @@ public sealed class DraftRecoveryTests
     [TestCleanup] public void CleanUp() { if (Directory.Exists(directory)) Directory.Delete(directory, true); }
 
     [TestMethod]
+    public async Task AdventureEntriesAndLegacyInputSurviveReopenWithoutRebinding()
+    {
+        Directory.CreateDirectory(directory);
+        await File.WriteAllTextAsync(Journal, "{\"Version\":1,\"Name\":\"Legacy\"}");
+        var store = new FileDraftRecovery(Journal);
+        var legacy = (await store.LoadAllAsync()).Single();
+        Assert.IsNull(legacy.AdventureId);
+        var first = new DraftRecovery("First", CharacterId.New(), AdventureId.New());
+        var second = new DraftRecovery("  Unfinished\n", AdventureId: AdventureId.New());
+        await store.SaveAllAsync([legacy, first, second]);
+        CollectionAssert.AreEqual(new[] { legacy, first, second }, (await new FileDraftRecovery(Journal).LoadAllAsync()).ToArray());
+        await store.SaveAllAsync([legacy, second]);
+        CollectionAssert.AreEqual(new[] { legacy, second }, (await store.LoadAllAsync()).ToArray());
+    }
+
+    [TestMethod]
+    public async Task DuplicateContextsAndOversizedSetPreservePriorJournal()
+    {
+        var store = new FileDraftRecovery(Journal);
+        var original = new DraftRecovery("Original", AdventureId: AdventureId.New());
+        await store.SaveAllAsync([original]);
+        var bytes = await File.ReadAllBytesAsync(Journal);
+        await Assert.ThrowsExactlyAsync<ArgumentException>(() => store.SaveAllAsync([original, original with { Name = "Other" }]));
+        await Assert.ThrowsExactlyAsync<ArgumentException>(() => store.SaveAllAsync(Enumerable.Range(0, 10)
+            .Select(_ => new DraftRecovery(new string('x', 4096), AdventureId: AdventureId.New())).ToArray()));
+        CollectionAssert.AreEqual(bytes, await File.ReadAllBytesAsync(Journal));
+        await File.WriteAllTextAsync(Journal, "{\"Version\":2,\"Entries\":[null]}");
+        await Assert.ThrowsExactlyAsync<InvalidDataException>(() => store.LoadAllAsync());
+    }
+
+    [TestMethod]
     public async Task UnfinishedInputAndSubmittedIdentitySurviveReopenAndClear()
     {
         var store = new FileDraftRecovery(Journal);

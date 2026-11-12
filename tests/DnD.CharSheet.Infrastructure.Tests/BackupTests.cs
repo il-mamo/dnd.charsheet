@@ -11,6 +11,32 @@ public sealed class BackupTests
     private static byte[] ValidPng() => Convert.FromBase64String("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4nGP4z8DwHwAFAAH/iZk9HQAAAABJRU5ErkJggg==");
 
     [TestMethod]
+    public async Task MultipleRecoveryContextsIncludingDeletedAdventureRoundTripWithoutReassignment()
+    {
+        var active = AdventureId.New();
+        var deleted = AdventureId.New();
+        var repository = new SqliteAdventureRepository(Database);
+        await repository.CreateWithDraftAsync(active, "Active", CharacterId.New(), "First");
+        await repository.CreateWithDraftAsync(deleted, "Deleted", CharacterId.New(), "Retained");
+        await repository.DeleteAsync(deleted);
+        var entries = new[]
+        {
+            new DraftRecovery("Active input", CharacterId.New(), active),
+            new DraftRecovery("Deleted input", AdventureId: deleted),
+            new DraftRecovery("Legacy input")
+        };
+        var recovery = new FileDraftRecovery(Path.Combine(Data, "draft-recovery.json"));
+        await recovery.SaveAllAsync(entries);
+        var service = new FileBackupService(Data);
+        await service.CreateAsync(Archive);
+        using var preview = await service.PreviewAsync(Archive);
+        await recovery.SaveAllAsync([]);
+        await service.RestoreAsync(preview);
+        CollectionAssert.AreEqual(entries, (await new FileDraftRecovery(Path.Combine(Data, "draft-recovery.json")).LoadAllAsync()).ToArray());
+        Assert.AreEqual(active, (await repository.ListAsync()).Single().Id);
+    }
+
+    [TestMethod]
     public async Task LegacyIdentityOnlyRowsRoundTripWithoutInventingMetadata()
     {
         var id = CharacterId.New();

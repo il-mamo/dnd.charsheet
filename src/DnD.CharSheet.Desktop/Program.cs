@@ -32,6 +32,6 @@ internal static class Program
         SystemParameters.StaticPropertyChanged += (_, _) => Theme.Apply(app.Resources);
         var database = new CharacterDatabase(CharacterDatabase.DefaultPath);
         var backups = new FileBackupService(dataDirectory);
-        app.Run(new MainWindow(() => Task.Run(() => { backups.RecoverInterruptedRestore(); database.Initialize(); }), new SqliteCharacterLibrary(database), new ManagedCharacterPortraits(database, System.IO.Path.Combine(dataDirectory, "portraits")), new FileDraftRecovery(System.IO.Path.Combine(dataDirectory, "draft-recovery.json")), backups));
+        app.Run(new MainWindow(() => Task.Run(() => { backups.RecoverInterruptedRestore(); database.Initialize(); }), new SqliteCharacterLibrary(database), new ManagedCharacterPortraits(database, System.IO.Path.Combine(dataDirectory, "portraits")), new FileDraftRecovery(System.IO.Path.Combine(dataDirectory, "draft-recovery.json")), backups, new SqliteAdventureRepository(database)));
     }
 }

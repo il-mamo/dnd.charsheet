@@ -21,6 +21,8 @@ public interface ICharacterLibrary
 {
     Task<IReadOnlyList<CharacterDraft>> ListAsync(CancellationToken cancellationToken = default);
     Task<CharacterDraft> CreateDraftAsync(CharacterId id, string name, CancellationToken cancellationToken = default);
+    Task<CharacterDraft> CreateDraftInAdventureAsync(CharacterId id, string name, AdventureId adventureId, CancellationToken cancellationToken = default) =>
+        throw new NotSupportedException("This character library does not support Adventures.");
 }
 
 

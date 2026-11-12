@@ -1,6 +1,6 @@
 # DnD.CharSheet — design specification
 
-Version: 2.2, 2026-10-20. Status: revision 2.2 approved by the owner as the basis for Task 2.3 on 2026-10-20; broader screen implementation remains deferred. Task 2.3 now integrates the bounded shell/library visual refresh from b5cd216 with portraits; this does not implement the remaining planned screens. Developer metadata and production assets follow final design approval.
+Version: 2.2, 2026-10-20. Task 2.7 amendment (2026-11-06): owner approved Adventure boards A/C in review-v2.1; concrete implementation and review in tasks/2.7.design.md. Status: revision 2.2 approved by the owner as the basis for Task 2.3 on 2026-10-20; broader screen implementation remains deferred. Task 2.3 now integrates the bounded shell/library visual refresh from b5cd216 with portraits; this does not implement the remaining planned screens. Developer metadata and production assets follow final design approval.
 
 ## 1. Purpose, authority and reading strategy
 This document governs visual language, interaction consistency and the Designer-to-Developer handoff. Root `AGENTS.md` governs workflow; `TECHNICAL_SPEC.md` governs product scope and PHB behavior. Design cannot add rules, change calculations or expand functionality. Surface conflicts to the Coordinator before dependent implementation.
