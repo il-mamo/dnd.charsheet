@@ -91,6 +91,29 @@ public sealed class SqliteAdventureRepository(CharacterDatabase database) : IAdv
         }, cancellationToken);
     }
 
+    public Task TransferAsync(CharacterId character, AdventureId source, AdventureId destination, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(character);
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(destination);
+        if (source == destination) throw new ArgumentException("Choose a different destination Adventure.", nameof(destination));
+        return Run(command =>
+        {
+            Parameter(command, "$character", character.ToString());
+            Parameter(command, "$source", source.ToString());
+            Parameter(command, "$destination", destination.ToString());
+            command.CommandText = "SELECT character_id FROM adventure_memberships WHERE adventure_id=$source AND character_id<>$character ORDER BY character_id LIMIT 1";
+            if (command.ExecuteScalar() is not string replacement)
+                throw new InvalidOperationException("The last character cannot be transferred. Delete the Adventure in management to retain its character unassigned.");
+            Parameter(command, "$replacement", replacement);
+            // The deferred first-member reference must point at a retained source member.
+            command.CommandText = "UPDATE adventures SET first_character_id=$replacement WHERE id=$source AND first_character_id=$character";
+            command.ExecuteNonQuery();
+            ExecuteOne(command, "UPDATE adventure_memberships SET adventure_id=$destination WHERE character_id=$character AND adventure_id=$source AND EXISTS (SELECT 1 FROM adventures WHERE id=$destination)");
+            return true;
+        }, cancellationToken);
+    }
+
     public Task RenameAsync(AdventureId id, string name, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(id);
