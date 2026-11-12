@@ -25,6 +25,15 @@ public sealed class SqliteCharacterLibrary(CharacterDatabase database) : ICharac
     }, cancellationToken);
 
     public Task<CharacterDraft> CreateDraftAsync(CharacterId id, string name, CancellationToken cancellationToken = default)
+        => Create(id, name, null, cancellationToken);
+
+    public Task<CharacterDraft> CreateDraftInAdventureAsync(CharacterId id, string name, AdventureId adventureId, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(adventureId);
+        return Create(id, name, adventureId, cancellationToken);
+    }
+
+    private Task<CharacterDraft> Create(CharacterId id, string name, AdventureId? adventureId, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(id);
         var normalized = DraftName.Normalize(name);
@@ -41,6 +50,12 @@ public sealed class SqliteCharacterLibrary(CharacterDatabase database) : ICharac
             command.CommandText = "INSERT INTO character_drafts(character_id, name) VALUES ($id, $name);";
             command.Parameters.AddWithValue("$name", normalized);
             command.ExecuteNonQuery();
+            if (adventureId is not null)
+            {
+                command.CommandText = "INSERT INTO adventure_memberships(character_id, adventure_id) VALUES ($id, $adventure);";
+                command.Parameters.AddWithValue("$adventure", adventureId.ToString());
+                command.ExecuteNonQuery();
+            }
             cancellationToken.ThrowIfCancellationRequested();
             transaction.Commit();
             return new CharacterDraft(id, new CharacterRevision(0), normalized);

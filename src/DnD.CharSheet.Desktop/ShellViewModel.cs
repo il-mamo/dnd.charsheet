@@ -20,14 +20,14 @@ public sealed partial class ShellViewModel : ObservableObject
     private long recoveryVersion;
     [ObservableProperty] private string recoveryStatus = "Loading draft recovery…";
     [ObservableProperty] private bool hasRecoveryError;
-    public bool CanEditDraftName => recoveryLoaded && !IsCreating && !closing && submittedId is null;
+    public bool CanEditDraftName => recoveryLoaded && SelectedAdventure is not null && !IsAdventureBusy && !IsCreating && !closing && submittedId is null;
     public string CreateDraftLabel => submittedId is null ? "Create draft" : "Retry create";
     partial void OnIsCreatingChanged(bool value) => OnPropertyChanged(nameof(CanEditDraftName));
 
     partial void OnDraftNameInputChanged(string value)
     {
-        if (restoring || recovery is null || !recoveryLoaded) return;
-        QueueRecoveryWrite(new DraftRecovery(value));
+        if (restoring || recovery is null || !recoveryLoaded || SelectedAdventure is null || IsAdventureBusy || closing) return;
+        QueueRecoveryWrite(new DraftRecovery(value, null, SelectedAdventure?.Id));
     }
 
     private void QueueRecoveryWrite(DraftRecovery snapshot)
@@ -43,7 +43,7 @@ public sealed partial class ShellViewModel : ObservableObject
         await previous;
         try
         {
-            await recovery!.SaveAsync(snapshot);
+            await recovery!.SaveAllAsync(UpdateRecovery(snapshot));
             if (version == recoveryVersion)
             {
                 RecoveryStatus = "Name saved for recovery.";
@@ -65,7 +65,8 @@ public sealed partial class ShellViewModel : ObservableObject
         if (recoveryLoaded) return;
         try
         {
-            var snapshot = recovery is null ? null : await recovery.LoadAsync();
+            recoveryEntries = recovery is null ? [] : (await recovery.LoadAllAsync()).ToList();
+            var snapshot = SelectedAdventure is null ? null : recoveryEntries.FirstOrDefault(entry => entry.AdventureId == SelectedAdventure.Id);
             restoring = true;
             DraftNameInput = snapshot?.Name ?? "";
             restoring = false;
@@ -86,25 +87,27 @@ public sealed partial class ShellViewModel : ObservableObject
             restoring = false;
             OnPropertyChanged(nameof(CanEditDraftName));
             OnPropertyChanged(nameof(CreateDraftLabel));
-            CanCreate = recoveryLoaded && libraryLoaded;
+            OnPropertyChanged(nameof(RetainedRecoveryText));
+            CanCreate = recoveryLoaded && libraryLoaded && SelectedAdventure is not null && !IsAdventureBusy;
         }
     }
 
     [RelayCommand]
     private async Task RetryRecoveryAsync()
     {
-        if (IsCreating || closing) return;
+        if (IsCreating || closing || IsAdventureBusy) return;
         if (!recoveryLoaded) await LoadRecoveryAsync();
         else if (submittedId is not null && CanCreate) await CreateDraftCommand.ExecuteAsync(null);
-        else if (submittedId is null)
+        else if (submittedId is null && SelectedAdventure is not null)
         {
-            QueueRecoveryWrite(new DraftRecovery(DraftNameInput));
+            QueueRecoveryWrite(new DraftRecovery(DraftNameInput, null, SelectedAdventure?.Id));
             await recoveryWrites;
         }
     }
 
     public async Task<bool> PrepareToCloseAsync()
     {
+        if (IsAdventureBusy) return false;
         closing = true;
         CanCreate = false;
         OnPropertyChanged(nameof(CanEditDraftName));
@@ -114,7 +117,7 @@ public sealed partial class ShellViewModel : ObservableObject
         // A failed load never modified the journal; it is safe to leave it untouched.
         var safe = !recoveryLoaded || !HasRecoveryError;
         closing = false;
-        CanCreate = recoveryLoaded && libraryLoaded;
+        CanCreate = recoveryLoaded && libraryLoaded && SelectedAdventure is not null && !IsAdventureBusy;
         OnPropertyChanged(nameof(CanEditDraftName));
         return safe;
     }
@@ -160,6 +163,14 @@ public sealed partial class ShellViewModel : ObservableObject
         // No old in-memory identity or unfinished input may write into the restored graph.
         ActiveDraft = null;
         Drafts.Clear();
+        SelectedAdventure = null;
+        ManagementSelection = null;
+        SelectedUnassigned = null;
+        pendingAdventure = null;
+        NewAdventureNameInput = FirstCharacterName = AdventureNameInput = "";
+        CancelAdventureAction();
+        ShowAdventurePanel = true;
+        recoveryEntries.Clear();
         recoveryLoaded = libraryLoaded = false;
         submittedId = null;
         restoring = true;
@@ -173,19 +184,27 @@ public sealed partial class ShellViewModel : ObservableObject
     private bool running;
     public ObservableCollection<CharacterDraft> Drafts { get; } = [];
 
-    public ShellViewModel(Func<Task> initialize, ICharacterLibrary library, IDraftRecovery? recovery = null)
+    public ShellViewModel(Func<Task> initialize, ICharacterLibrary library, IDraftRecovery? recovery = null, IAdventureRepository? adventures = null)
     {
         this.initialize = initialize;
         this.library = library;
         this.recovery = recovery;
+        this.adventures = adventures;
     }
 
     [RelayCommand]
-    private void ActivateDraft(CharacterId? id)
+    private async Task ActivateDraftAsync(CharacterId? id)
     {
         // Resolve the canonical loaded snapshot, never a caller-supplied name/object.
         var draft = Drafts.FirstOrDefault(candidate => candidate.Id == id);
-        if (draft is not null) ActiveDraft = draft;
+        if (draft is null || SelectedAdventure is null || IsAdventureBusy || IsCreating || closing) return;
+        var context = SelectedAdventure.Id;
+        try
+        {
+            (await adventures!.GetMembershipAsync(draft.Id)).RequireUsableIn(context);
+            if (SelectedAdventure?.Id == context && !ShowAdventurePanel) ActiveDraft = draft;
+        }
+        catch (Exception) { LibraryStatus = "Character membership changed. Reload the Adventure."; ActiveDraft = null; }
     }
 
     [RelayCommand]
@@ -204,11 +223,12 @@ public sealed partial class ShellViewModel : ObservableObject
             await initialize();
             DatabaseStatus = "";
             await LoadRecoveryAsync();
-            await LoadLibraryAsync();
+            await RefreshAdventuresAsync();
         }
         catch (Exception)
         {
-            DatabaseStatus = "Characters could not be loaded. Retry.";
+            DatabaseStatus = "Adventures could not be loaded. Retry.";
+            AdventureStatus = "Adventures could not be opened. Retry.";
             LibraryStatus = "Characters unavailable.";
             HasFailed = true;
         }
@@ -223,15 +243,21 @@ public sealed partial class ShellViewModel : ObservableObject
     {
         CanCreate = false;
         CanRetryLibrary = false;
+        libraryLoaded = false;
         LibraryStatus = "Loading saved characters…";
         try
         {
-            var drafts = await library.ListAsync();
+            if (SelectedAdventure is null) { Drafts.Clear(); libraryLoaded = false; return; }
+            var context = SelectedAdventure.Id;
+            var all = await library.ListAsync();
+            var drafts = new List<CharacterDraft>();
+            foreach (var draft in all)
+                if ((await adventures!.GetMembershipAsync(draft.Id)).AdventureId == context) drafts.Add(draft);
             Drafts.Clear();
             foreach (var draft in drafts) Drafts.Add(draft);
             LibraryStatus = Drafts.Count == 0 ? "No characters" : $"{Drafts.Count} saved incomplete drafts.";
             libraryLoaded = true;
-            CanCreate = recoveryLoaded;
+            CanCreate = recoveryLoaded && SelectedAdventure is not null && !IsAdventureBusy;
         }
         catch (Exception)
         {
@@ -249,7 +275,8 @@ public sealed partial class ShellViewModel : ObservableObject
     [RelayCommand(CanExecute = nameof(CanCreate))]
     private async Task CreateDraftAsync()
     {
-        if (!CanCreate) return;
+        if (!CanCreate || SelectedAdventure is null) return;
+        var context = SelectedAdventure.Id;
         HasNameError = false;
         HasCreationError = false;
         HasCreationSucceeded = false;
@@ -273,7 +300,7 @@ public sealed partial class ShellViewModel : ObservableObject
                 // All prior input writes finish before the durable submission replaces them.
                 await recoveryWrites;
                 if (recovery is not null)
-                    await recovery.SaveAsync(new DraftRecovery(rawName, submittedId));
+                    await recovery.SaveAllAsync(UpdateRecovery(new DraftRecovery(rawName, submittedId, context)));
                 intentPersisted = true;
                 RecoveryStatus = "Name saved for recovery.";
                 HasRecoveryError = false;
@@ -281,11 +308,14 @@ public sealed partial class ShellViewModel : ObservableObject
                 saved = (await library.ListAsync()).FirstOrDefault(draft => draft.Id == submittedId);
                 if (saved is not null && saved.Name != DraftName.Normalize(rawName))
                     throw new InvalidOperationException("Submitted identity has different metadata.");
-                saved ??= await library.CreateDraftAsync(submittedId, rawName);
+                if (saved is not null) (await adventures!.GetMembershipAsync(saved.Id)).RequireUsableIn(context);
+                saved ??= await library.CreateDraftInAdventureAsync(submittedId, rawName, context);
                 if (!Drafts.Any(draft => draft.Id == saved.Id)) Drafts.Add(saved);
+                OnPropertyChanged(nameof(AllCharacterCount));
                 LibraryStatus = $"{Drafts.Count} saved incomplete drafts.";
                 CreationStatus = "Character saved. Finishing recovery…";
-                if (recovery is not null) await recovery.SaveAsync(null);
+                recoveryEntries.RemoveAll(entry => entry.AdventureId == context);
+                if (recovery is not null) await recovery.SaveAllAsync(recoveryEntries.ToArray());
                 restoring = true;
                 DraftNameInput = "";
                 restoring = false;
@@ -309,7 +339,7 @@ public sealed partial class ShellViewModel : ObservableObject
             finally
             {
                 IsCreating = false;
-                CanCreate = recoveryLoaded && libraryLoaded;
+                CanCreate = recoveryLoaded && libraryLoaded && SelectedAdventure is not null && !IsAdventureBusy;
                 OnPropertyChanged(nameof(CanEditDraftName));
                 OnPropertyChanged(nameof(CreateDraftLabel));
             }

@@ -15,13 +15,13 @@ public partial class MainWindow : Window
     public DnD.CharSheet.Application.ICharacterPortraits? Portraits { get; }
     public static readonly DependencyProperty PortraitRefreshProperty = DependencyProperty.Register(nameof(PortraitRefresh), typeof(int), typeof(MainWindow), new PropertyMetadata(0));
     public int PortraitRefresh { get => (int)GetValue(PortraitRefreshProperty); set => SetValue(PortraitRefreshProperty, value); }
-    public MainWindow(Func<Task> initialize, DnD.CharSheet.Application.ICharacterLibrary library, DnD.CharSheet.Application.ICharacterPortraits? portraits = null, DnD.CharSheet.Application.IDraftRecovery? recovery = null, DnD.CharSheet.Application.IBackupService? backups = null)
+    public MainWindow(Func<Task> initialize, DnD.CharSheet.Application.ICharacterLibrary library, DnD.CharSheet.Application.ICharacterPortraits? portraits = null, DnD.CharSheet.Application.IDraftRecovery? recovery = null, DnD.CharSheet.Application.IBackupService? backups = null, DnD.CharSheet.Application.IAdventureRepository? adventures = null)
     {
         this.backups = backups;
         Portraits = portraits;
         InitializeComponent();
         BackupsButton.IsEnabled = backups is not null;
-        var model = new ShellViewModel(initialize, library, recovery);
+        var model = new ShellViewModel(initialize, library, recovery, adventures);
         DataContext = model;
         var closing = false;
         var closeReady = false;
@@ -97,7 +97,7 @@ public partial class MainWindow : Window
             foreach (var operation in new Task?[] { model.InitializeCommand.ExecutionTask, model.RetryLibraryCommand.ExecutionTask, model.RetryRecoveryCommand.ExecutionTask })
                 if (operation is not null) await operation;
             if (!await model.PrepareToCloseAsync()) return;
-            var dialog = new BackupWindow(backups, model.HasFailed || model.CanRetryLibrary ? null : model.Drafts.Count) { Owner = this };
+            var dialog = new BackupWindow(backups, model.HasFailed || model.CanRetryLibrary ? null : model.AllCharacterCount) { Owner = this };
             dialog.ShowDialog();
             if (dialog.WasRestored)
             {
@@ -118,7 +118,7 @@ public partial class MainWindow : Window
     {
         if (Portraits is null || DataContext is not ShellViewModel model) return;
         var character = (sender as FrameworkElement)?.DataContext as DnD.CharSheet.Application.CharacterDraft ?? model.ActiveDraft;
-        if (character is null) return;
+        if (character is null || model.ShowAdventurePanel || !model.Drafts.Any(d => d.Id == character.Id) || model.IsAdventureBusy) return;
         var dialog = new PortraitWindow(Portraits, character) { Owner = this };
         if (dialog.ShowDialog() == true)
         {
@@ -130,6 +130,7 @@ public partial class MainWindow : Window
 
     private void SwitchCharacterExecuted(object sender, ExecutedRoutedEventArgs e)
     {
+        if (DataContext is not ShellViewModel model || !model.ShowCharacterLibrary) { e.Handled = true; return; }
         SavedCharacters.UpdateLayout();
         var target = FindActivationButton(SavedCharacters);
         FrameworkElement focusTarget = target is null ? DraftNameBox : target;

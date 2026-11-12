@@ -27,10 +27,11 @@
     <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="720"/></Grid.ColumnDefinitions>
     <StackPanel VerticalAlignment="Center">
      <TextBlock Text="PLAYER'S HANDBOOK 2024" FontSize="13" Foreground="{DynamicResource Brush.TextSecondary}"/>
-     <TextBlock Text="Character library" Style="{StaticResource Heading}" Margin="0,8,0,12"/>
+     <TextBlock Text="{Binding AdventureHeading}" ToolTip="{Binding AdventureHeading}" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" Style="{StaticResource Heading}" Margin="0,4,0,6"/>
+     <StackPanel Orientation="Horizontal" Margin="0,0,0,4" Visibility="{Binding ShowCharacterLibrary, Converter={StaticResource BooleanVisibility}}"><Button Content="Change Adventure" Command="{Binding ReturnToSelectionCommand}" Margin="0,0,12,0"/><Button Content="Manage Adventures" Command="{Binding ReturnToSelectionCommand}"/></StackPanel>
      <Border Height="1" Width="120" Background="{DynamicResource Brush.Brass}" HorizontalAlignment="Left"/>
     </StackPanel>
-    <Grid Grid.Column="1" VerticalAlignment="Center">
+    <Grid Grid.Column="1" VerticalAlignment="Center" Visibility="{Binding ShowCharacterLibrary, Converter={StaticResource BooleanVisibility}}">
      <Grid.ColumnDefinitions><ColumnDefinition Width="56"/><ColumnDefinition Width="16"/><ColumnDefinition/><ColumnDefinition Width="16"/><ColumnDefinition Width="156"/></Grid.ColumnDefinitions>
      <local:PortraitThumbnail Width="56" Height="56" CharacterId="{Binding ActiveDraft.Id}" Portraits="{Binding Portraits, RelativeSource={RelativeSource AncestorType=Window}}" Refresh="{Binding PortraitRefresh, RelativeSource={RelativeSource AncestorType=Window}}" VerticalAlignment="Center"/>
      <StackPanel Grid.Column="2" VerticalAlignment="Center">
@@ -47,7 +48,7 @@
     </Grid>
    </Grid>
   </Border>
-  <Grid Grid.Row="2" Margin="24">
+  <Grid Grid.Row="2" Margin="24" Visibility="{Binding ShowCharacterLibrary, Converter={StaticResource BooleanVisibility}}">
    <Grid.ColumnDefinitions><ColumnDefinition Width="560"/><ColumnDefinition Width="24"/><ColumnDefinition/></Grid.ColumnDefinitions>
    <Border Style="{StaticResource SectionPanel}">
     <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Focusable="False">
@@ -122,5 +123,6 @@
     </DockPanel>
    </Border>
   </Grid>
+  <local:AdventurePanel Grid.Row="2" Margin="24" Visibility="{Binding ShowAdventurePanel, Converter={StaticResource BooleanVisibility}}"/>
  </Grid>
 </Window>
