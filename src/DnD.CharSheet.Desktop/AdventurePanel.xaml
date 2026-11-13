@@ -2,278 +2,132 @@
  <UserControl.Resources>
   <BooleanToVisibilityConverter x:Key="BooleanVisibility" />
   <local:AdventureMemberCountConverter x:Key="AdventureMemberCount" />
-  <Style TargetType="Label">
-   <Setter Property="Foreground" Value="{DynamicResource Brush.Text}" />
+  <LinearGradientBrush x:Key="Brush.WelcomeOpen.Normal" StartPoint="0,0" EndPoint="0,1"><GradientStop Color="#B51F3B" Offset="0" /><GradientStop Color="#771328" Offset="1" /></LinearGradientBrush>
+  <LinearGradientBrush x:Key="Brush.WelcomeOpen.Hover" StartPoint="0,0" EndPoint="0,1"><GradientStop Color="#CE2A49" Offset="0" /><GradientStop Color="#8F1830" Offset="1" /></LinearGradientBrush>
+  <LinearGradientBrush x:Key="Brush.WelcomeOpen.Pressed" StartPoint="0,0" EndPoint="0,1"><GradientStop Color="#7C1328" Offset="0" /><GradientStop Color="#5B0E1E" Offset="1" /></LinearGradientBrush>
+  <Style TargetType="Label"><Setter Property="Foreground" Value="{DynamicResource Brush.Text}" /></Style>
+  <Style x:Key="RequiresAdventure" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}"><Style.Triggers><DataTrigger Binding="{Binding ManagementSelection}" Value="{x:Null}"><Setter Property="IsEnabled" Value="False" /></DataTrigger></Style.Triggers></Style>
+  <Style x:Key="OpenAdventureButton" TargetType="Button" BasedOn="{StaticResource PrimaryButton}"><Setter Property="MinWidth" Value="168" /><Style.Triggers><DataTrigger Binding="{Binding ManagementSelection}" Value="{x:Null}"><Setter Property="IsEnabled" Value="False" /><Setter Property="IsHitTestVisible" Value="False" /></DataTrigger></Style.Triggers></Style>
+  <Style x:Key="WelcomeOpenButton" TargetType="Button">
+   <Setter Property="Width" Value="190" /><Setter Property="Height" Value="44" /><Setter Property="MinHeight" Value="44" /><Setter Property="Foreground" Value="{DynamicResource Brush.OnAccent}" /><Setter Property="Background" Value="{StaticResource Brush.WelcomeOpen.Normal}" /><Setter Property="BorderBrush" Value="#D84A61" /><Setter Property="BorderThickness" Value="1" /><Setter Property="FontSize" Value="16" /><Setter Property="FontWeight" Value="SemiBold" />
+   <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Button"><Grid><Border x:Name="Frame" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="4"><ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" /></Border><Border x:Name="FocusRing" Margin="2" BorderBrush="{DynamicResource Brush.Focus}" BorderThickness="2" CornerRadius="3" Visibility="Collapsed" IsHitTestVisible="False" /></Grid><ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Frame" Property="Background" Value="{StaticResource Brush.WelcomeOpen.Hover}" /><Setter TargetName="Frame" Property="BorderBrush" Value="#F06A7E" /></Trigger><Trigger Property="IsPressed" Value="True"><Setter TargetName="Frame" Property="Background" Value="{StaticResource Brush.WelcomeOpen.Pressed}" /><Setter TargetName="Frame" Property="BorderBrush" Value="#B43B50" /></Trigger><Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="FocusRing" Property="Visibility" Value="Visible" /></Trigger><Trigger Property="IsEnabled" Value="False"><Setter TargetName="Frame" Property="Background" Value="{DynamicResource Brush.SurfaceMuted}" /><Setter TargetName="Frame" Property="BorderBrush" Value="{DynamicResource Brush.Divider}" /><Setter Property="Foreground" Value="{DynamicResource Brush.TextSecondary}" /><Setter Property="Opacity" Value="0.72" /></Trigger><DataTrigger Binding="{Binding Source={x:Static SystemParameters.HighContrast}}" Value="True"><Setter TargetName="Frame" Property="Background" Value="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}" /><Setter TargetName="Frame" Property="BorderBrush" Value="{DynamicResource {x:Static SystemColors.WindowTextBrushKey}}" /><Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.HighlightTextBrushKey}}" /></DataTrigger></ControlTemplate.Triggers></ControlTemplate></Setter.Value></Setter>
+   <Style.Triggers><DataTrigger Binding="{Binding ManagementSelection}" Value="{x:Null}"><Setter Property="IsEnabled" Value="False" /><Setter Property="IsHitTestVisible" Value="False" /></DataTrigger></Style.Triggers>
   </Style>
-  <Style x:Key="RequiresAdventure" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
-   <Style.Triggers>
-    <DataTrigger Binding="{Binding ManagementSelection}" Value="{x:Null}">
-     <Setter Property="IsEnabled" Value="False" />
-    </DataTrigger>
-   </Style.Triggers>
+  <Style x:Key="AssignAdventureButton" TargetType="Button" BasedOn="{StaticResource RequiresAdventure}"><Style.Triggers><DataTrigger Binding="{Binding SelectedUnassigned}" Value="{x:Null}"><Setter Property="IsEnabled" Value="False" /></DataTrigger></Style.Triggers></Style>
+
+  <!-- Board A major-panel frame. One template supplies the double line and all four ornaments. -->
+  <Style x:Key="OrnatePanel" TargetType="ContentControl">
+   <Setter Property="Background" Value="{DynamicResource Brush.Surface}" /><Setter Property="BorderBrush" Value="{DynamicResource Brush.Brass}" /><Setter Property="Padding" Value="24" />
+   <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="ContentControl">
+    <Grid SnapsToDevicePixels="True">
+     <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1" CornerRadius="4" />
+     <Border BorderBrush="{DynamicResource Brush.Divider}" BorderThickness="1" CornerRadius="2" Margin="4" />
+     <ContentPresenter Margin="{TemplateBinding Padding}" />
+     <Path Data="M0,18 L0,0 L18,0 M3,13 L3,3 L13,3 M7,0 L11,4 M0,7 L4,11 M7,7 L11,7 L11,11" Stroke="{DynamicResource Brush.Brass}" StrokeThickness="1" Width="18" Height="18" HorizontalAlignment="Left" VerticalAlignment="Top" IsHitTestVisible="False" />
+     <Path Data="M0,18 L0,0 L18,0 M3,13 L3,3 L13,3 M7,0 L11,4 M0,7 L4,11 M7,7 L11,7 L11,11" Stroke="{DynamicResource Brush.Brass}" StrokeThickness="1" Width="18" Height="18" HorizontalAlignment="Right" VerticalAlignment="Top" IsHitTestVisible="False"><Path.RenderTransform><RotateTransform Angle="90" CenterX="9" CenterY="9" /></Path.RenderTransform></Path>
+     <Path Data="M0,18 L0,0 L18,0 M3,13 L3,3 L13,3 M7,0 L11,4 M0,7 L4,11 M7,7 L11,7 L11,11" Stroke="{DynamicResource Brush.Brass}" StrokeThickness="1" Width="18" Height="18" HorizontalAlignment="Right" VerticalAlignment="Bottom" IsHitTestVisible="False"><Path.RenderTransform><RotateTransform Angle="180" CenterX="9" CenterY="9" /></Path.RenderTransform></Path>
+     <Path Data="M0,18 L0,0 L18,0 M3,13 L3,3 L13,3 M7,0 L11,4 M0,7 L4,11 M7,7 L11,7 L11,11" Stroke="{DynamicResource Brush.Brass}" StrokeThickness="1" Width="18" Height="18" HorizontalAlignment="Left" VerticalAlignment="Bottom" IsHitTestVisible="False"><Path.RenderTransform><RotateTransform Angle="270" CenterX="9" CenterY="9" /></Path.RenderTransform></Path>
+    </Grid>
+   </ControlTemplate></Setter.Value></Setter>
   </Style>
-  <Style x:Key="OpenAdventureButton" TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
-   <Style.Triggers>
-    <DataTrigger Binding="{Binding ManagementSelection}" Value="{x:Null}">
-     <Setter Property="IsEnabled" Value="False" />
-    </DataTrigger>
-   </Style.Triggers>
+
+  <Style x:Key="AdventureCardItem" TargetType="ListBoxItem">
+   <Setter Property="Width" Value="330" /><Setter Property="Height" Value="236" /><Setter Property="Margin" Value="0,0,16,16" /><Setter Property="Foreground" Value="{DynamicResource Brush.Text}" /><Setter Property="HorizontalContentAlignment" Value="Stretch" /><Setter Property="VerticalContentAlignment" Value="Stretch" /><Setter Property="AutomationProperties.HelpText" Value="Select to preview; use Open Adventure to enter." />
+   <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="ListBoxItem">
+    <Grid Margin="2"><Border x:Name="CardFrame" Background="{DynamicResource Brush.Surface}" BorderBrush="{DynamicResource Brush.Border}" BorderThickness="1" CornerRadius="4"><ContentPresenter HorizontalAlignment="Stretch" VerticalAlignment="Stretch" /></Border><Border x:Name="FocusRing" BorderBrush="{DynamicResource Brush.Focus}" BorderThickness="2" CornerRadius="5" Visibility="Collapsed" IsHitTestVisible="False" /></Grid>
+    <ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="CardFrame" Property="BorderBrush" Value="{DynamicResource Brush.Brass}" /></Trigger><Trigger Property="IsSelected" Value="True"><Setter TargetName="CardFrame" Property="BorderBrush" Value="{DynamicResource Brush.Accent}" /><Setter TargetName="CardFrame" Property="BorderThickness" Value="2" /></Trigger><Trigger Property="IsKeyboardFocusWithin" Value="True"><Setter TargetName="FocusRing" Property="Visibility" Value="Visible" /></Trigger></ControlTemplate.Triggers>
+   </ControlTemplate></Setter.Value></Setter>
   </Style>
-  <Style x:Key="AssignAdventureButton" TargetType="Button" BasedOn="{StaticResource RequiresAdventure}">
-   <Style.Triggers>
-    <DataTrigger Binding="{Binding SelectedUnassigned}" Value="{x:Null}">
-     <Setter Property="IsEnabled" Value="False" />
-    </DataTrigger>
-   </Style.Triggers>
-  </Style>
-  <Style TargetType="ListBox">
-   <Setter Property="Template">
-    <Setter.Value>
-     <ControlTemplate TargetType="ListBox">
-      <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1">
-       <ScrollViewer Focusable="False" Padding="0">
-        <ItemsPresenter />
-       </ScrollViewer>
-      </Border>
-     </ControlTemplate>
-    </Setter.Value>
-   </Setter>
-   <Setter Property="ItemContainerStyle">
-    <Setter.Value>
-     <Style TargetType="ListBoxItem">
-      <Setter Property="Foreground" Value="{DynamicResource Brush.Text}" />
-      <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-      <Setter Property="Template">
-       <Setter.Value>
-        <ControlTemplate TargetType="ListBoxItem">
-         <Border x:Name="ItemBorder" Background="{DynamicResource Brush.Surface}" BorderBrush="{DynamicResource Brush.Surface}" BorderThickness="2" Padding="0">
-          <ContentPresenter HorizontalAlignment="Stretch" />
-         </Border>
-         <ControlTemplate.Triggers>
-          <Trigger Property="IsMouseOver" Value="True">
-           <Setter TargetName="ItemBorder" Property="Background" Value="{DynamicResource Brush.SurfaceMuted}" />
-          </Trigger>
-          <Trigger Property="IsSelected" Value="True">
-           <Setter TargetName="ItemBorder" Property="Background" Value="{DynamicResource Brush.Selection}" />
-           <Setter Property="Foreground" Value="{DynamicResource Brush.OnSelection}" />
-           <Setter TargetName="ItemBorder" Property="BorderBrush" Value="{DynamicResource Brush.Border}" />
-          </Trigger>
-          <Trigger Property="IsKeyboardFocusWithin" Value="True">
-           <Setter TargetName="ItemBorder" Property="BorderBrush" Value="{DynamicResource Brush.Focus}" />
-          </Trigger>
-         </ControlTemplate.Triggers>
-        </ControlTemplate>
-       </Setter.Value>
-      </Setter>
-     </Style>
-    </Setter.Value>
-   </Setter>
+
+  <Style x:Key="ManagementList" TargetType="ListBox">
+   <Setter Property="Background" Value="{DynamicResource Brush.Surface}" /><Setter Property="Foreground" Value="{DynamicResource Brush.Text}" /><Setter Property="BorderBrush" Value="{DynamicResource Brush.Border}" /><Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
+   <Setter Property="ItemContainerStyle"><Setter.Value><Style TargetType="ListBoxItem"><Setter Property="Foreground" Value="{DynamicResource Brush.Text}" /><Setter Property="HorizontalContentAlignment" Value="Stretch" /><Setter Property="Template"><Setter.Value><ControlTemplate TargetType="ListBoxItem"><Grid><Border x:Name="ItemBorder" Background="{DynamicResource Brush.Surface}" BorderBrush="{DynamicResource Brush.Surface}" BorderThickness="2"><ContentPresenter HorizontalAlignment="Stretch" /></Border><Border x:Name="FocusRing" BorderBrush="{DynamicResource Brush.Focus}" BorderThickness="2" Visibility="Collapsed" IsHitTestVisible="False" /></Grid><ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="ItemBorder" Property="Background" Value="{DynamicResource Brush.SurfaceMuted}" /><Setter TargetName="ItemBorder" Property="BorderBrush" Value="{DynamicResource Brush.Brass}" /></Trigger><Trigger Property="IsSelected" Value="True"><Setter TargetName="ItemBorder" Property="Background" Value="{DynamicResource Brush.Selection}" /><Setter Property="Foreground" Value="{DynamicResource Brush.OnSelection}" /><Setter TargetName="ItemBorder" Property="BorderBrush" Value="{DynamicResource Brush.Border}" /></Trigger><Trigger Property="IsKeyboardFocusWithin" Value="True"><Setter TargetName="FocusRing" Property="Visibility" Value="Visible" /></Trigger></ControlTemplate.Triggers></ControlTemplate></Setter.Value></Setter></Style></Setter.Value></Setter>
   </Style>
  </UserControl.Resources>
- <Grid MaxWidth="1648" HorizontalAlignment="Stretch">
-  <Grid.RowDefinitions>
-   <RowDefinition Height="Auto" />
-   <RowDefinition Height="*" />
-  </Grid.RowDefinitions>
-  <StackPanel>
-   <TextBlock x:Name="AdventureStatusText" Text="{Binding AdventureStatus}" AutomationProperties.Name="Adventure status" automation:AutomationProperties.LiveSetting="Polite" Margin="0,0,0,12" TextWrapping="Wrap" />
-   <WrapPanel>
-    <Button Content="Retry loading Adventures" Command="{Binding InitializeCommand}" Visibility="{Binding HasFailed, Converter={StaticResource BooleanVisibility}}" Margin="0,0,12,12" />
-    <Button Content="Retry draft recovery" Command="{Binding RetryRecoveryCommand}" Visibility="{Binding HasRecoveryError, Converter={StaticResource BooleanVisibility}}" Margin="0,0,0,12" />
-   </WrapPanel>
-  </StackPanel>
-  <Grid Grid.Row="1">
-   <Grid.ColumnDefinitions>
-    <ColumnDefinition Width="1040" />
-    <ColumnDefinition Width="24" />
-    <ColumnDefinition Width="584" />
-   </Grid.ColumnDefinitions>
-   <Border>
-    <Border.Style>
-     <Style TargetType="Border" BasedOn="{StaticResource SectionPanel}">
-      <Style.Triggers>
-       <DataTrigger Binding="{Binding IsAdventureBusy}" Value="True">
-        <Setter Property="IsEnabled" Value="False" />
-       </DataTrigger>
-       <DataTrigger Binding="{Binding HasAdventureConfirmation}" Value="True">
-        <Setter Property="IsEnabled" Value="False" />
-       </DataTrigger>
-      </Style.Triggers>
-     </Style>
-    </Border.Style>
-    <Grid>
-     <Grid.RowDefinitions>
-      <RowDefinition Height="Auto" />
-      <RowDefinition Height="Auto" />
-      <RowDefinition Height="Auto" />
-      <RowDefinition Height="*" />
-      <RowDefinition Height="Auto" />
-      <RowDefinition Height="*" />
-     </Grid.RowDefinitions>
-     <DockPanel>
-      <Button DockPanel.Dock="Right" Content="Retry / Refresh" Command="{Binding RefreshAdventuresCommand}" AutomationProperties.Name="Refresh Adventures" Margin="12,0,0,0" />
-      <TextBlock Text="Select Adventure" Style="{StaticResource SectionHeading}" VerticalAlignment="Center" />
-     </DockPanel>
-     <Label Grid.Row="1" Target="{Binding ElementName=AdventureSearch}" Content="Search Adventures" Padding="0" Margin="0,12,0,8" />
-     <StackPanel Grid.Row="2">
-      <TextBox x:Name="AdventureSearch" TextChanged="SearchChanged" AutomationProperties.Name="Search Adventures" Margin="0,0,0,8" />
-      <TextBlock x:Name="SearchStatus" TextWrapping="Wrap" Foreground="{DynamicResource Brush.TextSecondary}" Margin="0,0,0,8" automation:AutomationProperties.LiveSetting="Polite" />
-     </StackPanel>
-     <ListBox Grid.Row="3" x:Name="AdventureList" ItemsSource="{Binding Adventures}" SelectedItem="{Binding ManagementSelection, Mode=TwoWay}" AutomationProperties.Name="Adventures" HorizontalContentAlignment="Stretch" Background="{DynamicResource Brush.Surface}" Foreground="{DynamicResource Brush.Text}" BorderBrush="{DynamicResource Brush.Border}" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
-      <ListBox.ItemTemplate>
-       <DataTemplate>
-        <StackPanel Margin="12">
-         <TextBlock Text="{Binding Name}" FontWeight="SemiBold" TextWrapping="Wrap" />
-         <TextBlock FontSize="13" Foreground="{DynamicResource Brush.TextSecondary}" Margin="0,4,0,0">
-          <TextBlock.Text>
-           <MultiBinding Converter="{StaticResource AdventureMemberCount}">
-            <Binding Path="Id" />
-            <Binding Path="DataContext.AdventureMemberCounts" RelativeSource="{RelativeSource AncestorType=UserControl}" />
-           </MultiBinding>
-          </TextBlock.Text>
-         </TextBlock>
-        </StackPanel>
-       </DataTemplate>
-      </ListBox.ItemTemplate>
-     </ListBox>
-     <StackPanel Grid.Row="4" Margin="0,16,0,8">
-      <TextBlock Text="Unassigned characters" Style="{StaticResource SectionHeading}" />
-      <TextBlock Text="{Binding UnassignedStatus, FallbackValue=Characters are kept here until assigned to an Adventure.}" TextWrapping="Wrap" Foreground="{DynamicResource Brush.TextSecondary}" Margin="0,8,0,0" />
-     </StackPanel>
-     <ListBox Grid.Row="5" ItemsSource="{Binding UnassignedDrafts}" SelectedItem="{Binding SelectedUnassigned, Mode=TwoWay}" AutomationProperties.Name="Unassigned characters" HorizontalContentAlignment="Stretch" Background="{DynamicResource Brush.Surface}" Foreground="{DynamicResource Brush.Text}" BorderBrush="{DynamicResource Brush.Border}" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
-      <ListBox.ItemTemplate>
-       <DataTemplate>
-        <DockPanel Margin="12">
-         <local:PortraitThumbnail DockPanel.Dock="Left" Width="48" Height="48" CharacterId="{Binding Id}" Portraits="{Binding Portraits, RelativeSource={RelativeSource AncestorType=Window}}" Refresh="{Binding PortraitRefresh, RelativeSource={RelativeSource AncestorType=Window}}" Margin="0,0,12,0" />
-         <StackPanel>
-          <TextBlock Text="{Binding Name}" FontWeight="SemiBold" TextWrapping="Wrap" />
-          <TextBlock Text="Unassigned · Incomplete draft" FontSize="13" Foreground="{DynamicResource Brush.TextSecondary}" Margin="0,4,0,0" />
-         </StackPanel>
-        </DockPanel>
-       </DataTemplate>
-      </ListBox.ItemTemplate>
-     </ListBox>
-    </Grid>
-   </Border>
-   <Border Grid.Column="2" Style="{StaticResource SectionPanel}">
-    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Focusable="False">
-     <StackPanel>
-      <StackPanel x:Name="ManagementForms">
-       <StackPanel.Style>
-        <Style TargetType="StackPanel">
-         <Style.Triggers>
-          <DataTrigger Binding="{Binding IsAdventureBusy}" Value="True">
-           <Setter Property="IsEnabled" Value="False" />
-          </DataTrigger>
-          <DataTrigger Binding="{Binding HasAdventureConfirmation}" Value="True">
-           <Setter Property="IsEnabled" Value="False" />
-          </DataTrigger>
-         </Style.Triggers>
-        </Style>
-       </StackPanel.Style>
-       <TextBlock Text="{Binding ManagementSelection.Name, TargetNullValue=Choose an Adventure, FallbackValue=Choose an Adventure}" Style="{StaticResource SectionHeading}" TextWrapping="Wrap" />
-       <TextBlock Text="Characters in this Adventure" Foreground="{DynamicResource Brush.TextSecondary}" Margin="0,12,0,8" />
-       <ScrollViewer MaxHeight="160" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Focusable="False">
-        <ItemsControl ItemsSource="{Binding PreviewMembers}" AutomationProperties.Name="Adventure member preview">
-         <ItemsControl.ItemTemplate>
-          <DataTemplate>
-           <Grid Margin="0,4">
-            <Grid.ColumnDefinitions>
-             <ColumnDefinition Width="60" />
-             <ColumnDefinition Width="*" />
-             <ColumnDefinition Width="Auto" />
-            </Grid.ColumnDefinitions>
-            <local:PortraitThumbnail Width="48" Height="48" CharacterId="{Binding Id}" Portraits="{Binding Portraits, RelativeSource={RelativeSource AncestorType=Window}}" Refresh="{Binding PortraitRefresh, RelativeSource={RelativeSource AncestorType=Window}}" Margin="0,0,12,0" />
-            <StackPanel Grid.Column="1" VerticalAlignment="Center">
-             <TextBlock Text="{Binding Name}" TextWrapping="Wrap" />
-             <TextBlock Text="Incomplete draft" FontSize="13" Foreground="{DynamicResource Brush.TextSecondary}" />
-            </StackPanel>
-            <Button Grid.Column="2" Content="Transfer…" Click="TransferMember" Margin="8,0,0,0">
-             <AutomationProperties.Name><Binding Path="Name" StringFormat="Transfer {0}"/></AutomationProperties.Name>
-            </Button>
-           </Grid>
-          </DataTemplate>
-         </ItemsControl.ItemTemplate>
-        </ItemsControl>
-       </ScrollViewer>
-       <Button Content="Open Adventure" Command="{Binding OpenAdventureCommand}" CommandParameter="{Binding ManagementSelection}" Style="{StaticResource OpenAdventureButton}" HorizontalAlignment="Left" Margin="0,16,0,12" />
-       <Button Content="Back to selection" Command="{Binding ReturnToSelectionCommand}" HorizontalAlignment="Left" Margin="0,0,0,16" />
-       <TextBlock Text="Manage selected Adventure" Style="{StaticResource SectionHeading}" />
-       <Label Target="{Binding ElementName=AdventureName}" Content="Adventure name (required)" Padding="0" Margin="0,12,0,8" />
-       <TextBox x:Name="AdventureName" Text="{Binding AdventureNameInput, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="Adventure name, required" MaxLength="80" />
-       <TextBlock Text="Use 1–80 characters. Rename changes only the selected Adventure." TextWrapping="Wrap" Foreground="{DynamicResource Brush.TextSecondary}" FontSize="13" Margin="0,8,0,12" />
-       <WrapPanel>
-        <Button Content="Rename" Style="{StaticResource RequiresAdventure}" Command="{Binding RenameAdventureCommand}" Margin="0,0,12,8" />
-        <Button Content="Delete Adventure…" Style="{StaticResource RequiresAdventure}" Command="{Binding RequestDeleteAdventureCommand}" Margin="0,0,0,8" />
-       </WrapPanel>
-       <Border Height="1" Background="{DynamicResource Brush.Divider}" Margin="0,16" />
-       <Button Content="Create Adventure…" Click="ShowCreateForm" HorizontalAlignment="Left" Margin="0,0,0,12" />
-       <StackPanel x:Name="CreateForm" Visibility="Collapsed">
-        <TextBlock Text="Create Adventure with first character" Style="{StaticResource SectionHeading}" TextWrapping="Wrap" />
-        <Label Target="{Binding ElementName=NewAdventureName}" Content="New Adventure name (required)" Padding="0" Margin="0,12,0,8" />
-        <TextBox x:Name="NewAdventureName" Text="{Binding NewAdventureNameInput, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="New Adventure name, required" MaxLength="80" />
-        <TextBlock Text="Enter a new draft name, or select an unassigned character from the list." TextWrapping="Wrap" Foreground="{DynamicResource Brush.TextSecondary}" Margin="0,12,0,8" />
-        <Label Target="{Binding ElementName=FirstCharacterName}" Content="New character name" Padding="0" Margin="0,4,0,8" />
-        <TextBox x:Name="FirstCharacterName" Text="{Binding FirstCharacterName, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="First character name" MaxLength="80">
-         <TextBox.Style>
-          <Style TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
-           <Setter Property="IsEnabled" Value="False" />
-           <Style.Triggers>
-            <DataTrigger Binding="{Binding SelectedUnassigned}" Value="{x:Null}">
-             <Setter Property="IsEnabled" Value="True" />
-            </DataTrigger>
-           </Style.Triggers>
-          </Style>
-         </TextBox.Style>
-        </TextBox>
-        <TextBlock Text="{Binding SelectedUnassigned.Name, StringFormat=First-character choice: assign {0}, TargetNullValue=First-character choice: create a new draft, FallbackValue=First-character choice: create a new draft}" TextWrapping="Wrap" Margin="0,12,0,8" />
-        <Button Content="Use a new draft instead" Click="ClearUnassigned" HorizontalAlignment="Left" Margin="0,0,0,12" />
-        <WrapPanel>
-         <Button Content="Cancel" Click="HideCreateForm" Margin="0,0,12,0" />
-         <Button Content="Create Adventure" Command="{Binding CreateAdventureCommand}" Style="{StaticResource PrimaryButton}" HorizontalAlignment="Left" />
-        </WrapPanel>
-       </StackPanel>
-       <Border Height="1" Background="{DynamicResource Brush.Divider}" Margin="0,16" />
-       <TextBlock Text="Assign unassigned character" Style="{StaticResource SectionHeading}" />
-       <TextBlock Text="Select an unassigned character and the destination Adventure in the lists, then review the assignment." TextWrapping="Wrap" Foreground="{DynamicResource Brush.TextSecondary}" Margin="0,12,0,12" />
-       <Button Content="Assign Adventure…" Style="{StaticResource AssignAdventureButton}" Command="{Binding RequestAssignCharacterCommand}" HorizontalAlignment="Left" />
-      </StackPanel>
-      <Border Visibility="{Binding HasAdventureConfirmation, Converter={StaticResource BooleanVisibility}}" BorderBrush="{DynamicResource Brush.Border}" BorderThickness="1" Padding="16" CornerRadius="8" Margin="0,16,0,0">
-       <StackPanel>
-        <TextBlock Text="Review change" Style="{StaticResource SectionHeading}" />
-        <TextBlock x:Name="ConfirmationStatusText" Text="{Binding ConfirmationText}" TextWrapping="Wrap" Margin="0,12" AutomationProperties.Name="Adventure change confirmation" automation:AutomationProperties.LiveSetting="Polite" />
-        <WrapPanel>
-         <WrapPanel.Style>
-          <Style TargetType="WrapPanel">
-           <Style.Triggers>
-            <DataTrigger Binding="{Binding IsAdventureBusy}" Value="True">
-             <Setter Property="IsEnabled" Value="False" />
-            </DataTrigger>
-           </Style.Triggers>
-          </Style>
-         </WrapPanel.Style>
-         <Button x:Name="CancelConfirmation" Content="Cancel" Command="{Binding CancelAdventureActionCommand}" Margin="0,0,12,8" />
-         <Button Content="{Binding ConfirmationActionLabel, FallbackValue=Confirm change}" Command="{Binding ConfirmAdventureActionCommand}" Margin="0,0,0,8" />
-        </WrapPanel>
-       </StackPanel>
-      </Border>
-      <TextBox x:Name="RetainedRecovery" Text="{Binding RetainedRecoveryText, Mode=OneWay}" IsReadOnly="True" TextWrapping="Wrap" Foreground="{DynamicResource Brush.Warning}" Margin="0,16,0,0" AutomationProperties.Name="Retained draft recovery" VerticalScrollBarVisibility="Auto" MaxHeight="160">
-       <TextBox.Style>
-        <Style TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
-         <Style.Triggers>
-          <DataTrigger Binding="{Binding RetainedRecoveryText}" Value="">
-           <Setter Property="Visibility" Value="Collapsed" />
-          </DataTrigger>
-          <DataTrigger Binding="{Binding RetainedRecoveryText}" Value="{x:Null}">
-           <Setter Property="Visibility" Value="Collapsed" />
-          </DataTrigger>
-         </Style.Triggers>
-        </Style>
-       </TextBox.Style>
-      </TextBox>
-     </StackPanel>
-    </ScrollViewer>
-   </Border>
+
+ <Grid Background="{DynamicResource Brush.Canvas}">
+  <Border x:Name="WelcomeBackground" IsHitTestVisible="False"><Border.Background><ImageBrush ImageSource="/DnD.CharSheet.Desktop;component/Presentation/Assets/adventure-welcome-background-v1.png" Stretch="UniformToFill" AlignmentX="Center" AlignmentY="Top" TileMode="None" /></Border.Background><Border.Style><Style TargetType="Border"><Style.Triggers><DataTrigger Binding="{Binding Source={x:Static SystemParameters.HighContrast}}" Value="True"><Setter Property="Visibility" Value="Collapsed" /></DataTrigger></Style.Triggers></Style></Border.Style></Border>
+  <Border IsHitTestVisible="False"><Border.Background><LinearGradientBrush StartPoint="0,0" EndPoint="0,1"><GradientStop Color="#00000000" Offset="0" /><GradientStop Color="#18081014" Offset="0.45" /><GradientStop Color="#50081014" Offset="1" /></LinearGradientBrush></Border.Background><Border.Style><Style TargetType="Border"><Style.Triggers><DataTrigger Binding="{Binding Source={x:Static SystemParameters.HighContrast}}" Value="True"><Setter Property="Visibility" Value="Collapsed" /></DataTrigger></Style.Triggers></Style></Border.Style></Border>
+
+  <Grid x:Name="WelcomeRoot">
+   <StackPanel x:Name="WelcomeTitle" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,22,0,0">
+    <TextBlock Text="DnD.CharSheet" FontFamily="{StaticResource Font.Heading}" FontSize="48" FontWeight="Bold" HorizontalAlignment="Center" />
+    <Viewbox x:Name="WelcomeTitleRule" Width="360" Height="18" Margin="0,5,0,0" Stretch="None" IsHitTestVisible="False">
+     <Canvas Width="360" Height="18"><Path Data="M0,9 L144,9 M216,9 L360,9 M144,9 C156,9 160,3 169,3 L180,9 L191,3 C200,3 204,9 216,9" Stroke="{DynamicResource Brush.Brass}" StrokeThickness="1" Fill="Transparent" /><Path Data="M172,9 L180,1 L188,9 L180,17 Z" Stroke="{DynamicResource Brush.Brass}" StrokeThickness="1" Fill="Transparent" /><Rectangle Canvas.Left="178" Canvas.Top="7" Width="4" Height="4" Fill="{DynamicResource Brush.Brass}" /></Canvas>
+    </Viewbox>
+   </StackPanel>
+
+   <Grid x:Name="WelcomePanels" Width="1512" Height="600" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,218,0,0">
+    <Grid.ColumnDefinitions><ColumnDefinition Width="1110" /><ColumnDefinition Width="24" /><ColumnDefinition Width="378" /></Grid.ColumnDefinitions>
+    <ContentControl Style="{StaticResource OrnatePanel}">
+     <Grid><Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="*" /></Grid.RowDefinitions>
+      <TextBlock Text="Select Adventure" FontFamily="{StaticResource Font.Heading}" FontSize="30" FontWeight="Bold" />
+      <TextBlock Grid.Row="1" Text="Choose an adventure to view its characters and continue." Foreground="{DynamicResource Brush.TextSecondary}" Margin="0,6,0,16" />
+      <Grid Grid.Row="2" Margin="0,0,0,12"><TextBox x:Name="AdventureSearch" TextChanged="SearchChanged" AutomationProperties.Name="Search Adventures" Padding="34,8,8,8" /><TextBlock Text="⌕" FontSize="24" Foreground="{DynamicResource Brush.TextSecondary}" Margin="10,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Center" IsHitTestVisible="False" /><TextBlock Text="Search adventures…" Foreground="{DynamicResource Brush.TextSecondary}" Margin="38,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Center" IsHitTestVisible="False"><TextBlock.Style><Style TargetType="TextBlock"><Setter Property="Visibility" Value="Collapsed" /><Style.Triggers><DataTrigger Binding="{Binding Text, ElementName=AdventureSearch}" Value=""><Setter Property="Visibility" Value="Visible" /></DataTrigger></Style.Triggers></Style></TextBlock.Style></TextBlock></Grid>
+      <StackPanel Grid.Row="3" Margin="0,0,0,8"><TextBlock x:Name="AdventureStatusText" Text="{Binding AdventureStatus}" AutomationProperties.Name="Adventure status" automation:AutomationProperties.LiveSetting="Polite" TextWrapping="Wrap" /><TextBlock x:Name="SearchStatus" TextWrapping="Wrap" Foreground="{DynamicResource Brush.TextSecondary}" automation:AutomationProperties.LiveSetting="Polite" /><Button Content="Retry loading Adventures" Command="{Binding InitializeCommand}" Visibility="{Binding HasFailed, Converter={StaticResource BooleanVisibility}}" HorizontalAlignment="Left" Margin="0,8,0,0" /></StackPanel>
+      <ListBox Grid.Row="4" x:Name="AdventureList" ItemsSource="{Binding Adventures}" SelectedItem="{Binding ManagementSelection, Mode=TwoWay}" AutomationProperties.Name="Adventures" Background="Transparent" BorderThickness="0" ItemContainerStyle="{StaticResource AdventureCardItem}" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Auto">
+       <ListBox.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ListBox.ItemsPanel>
+       <ListBox.ItemTemplate><DataTemplate><Grid><Grid.RowDefinitions><RowDefinition Height="148" /><RowDefinition Height="88" /></Grid.RowDefinitions>
+        <Border Background="{DynamicResource Brush.SurfaceMuted}" ClipToBounds="True" IsHitTestVisible="False"><Grid><Path Data="M0,116 L62,70 L103,98 L166,45 L240,108 L330,55 L330,148 L0,148 Z" Fill="{DynamicResource Brush.Canvas}" Stretch="Fill" Opacity="0.72" /><TextBlock Text="Adventure image" Foreground="{DynamicResource Brush.TextSecondary}" FontSize="13" HorizontalAlignment="Center" VerticalAlignment="Center" /></Grid></Border>
+        <Border Grid.Row="1" Background="{DynamicResource Brush.SurfaceMuted}" Padding="10,8"><StackPanel VerticalAlignment="Center"><TextBlock Text="{Binding Name}" FontFamily="{StaticResource Font.Heading}" FontSize="18" FontWeight="SemiBold" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" ToolTip="{Binding Name}" /><TextBlock FontSize="13" Foreground="{DynamicResource Brush.TextSecondary}" Margin="0,4,0,0"><TextBlock.Text><MultiBinding Converter="{StaticResource AdventureMemberCount}"><Binding Path="Id" /><Binding Path="DataContext.AdventureMemberCounts" RelativeSource="{RelativeSource AncestorType=UserControl}" /></MultiBinding></TextBlock.Text></TextBlock></StackPanel></Border>
+        <Grid Width="24" Height="24" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,8,8,0"><Grid.Style><Style TargetType="Grid"><Setter Property="Visibility" Value="Collapsed" /><Style.Triggers><DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=ListBoxItem}, Path=IsSelected}" Value="True"><Setter Property="Visibility" Value="Visible" /></DataTrigger></Style.Triggers></Style></Grid.Style><Ellipse Fill="{DynamicResource Brush.Accent}" Stroke="{DynamicResource Brush.Text}" StrokeThickness="1" /><Path Data="M6,12 L10,16 L18,7" Stroke="{DynamicResource Brush.OnAccent}" StrokeThickness="2" StrokeStartLineCap="Round" StrokeEndLineCap="Round" /></Grid>
+       </Grid></DataTemplate></ListBox.ItemTemplate>
+      </ListBox>
+     </Grid>
+    </ContentControl>
+
+    <ContentControl Grid.Column="2" Style="{StaticResource OrnatePanel}"><Grid><Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="*" /></Grid.RowDefinitions>
+     <TextBlock Text="{Binding ManagementSelection.Name, TargetNullValue=Adventure preview, FallbackValue=Adventure preview}" FontFamily="{StaticResource Font.Heading}" FontSize="24" FontWeight="Bold" TextWrapping="Wrap" />
+     <TextBlock Grid.Row="1" Margin="0,6,0,14" Foreground="{DynamicResource Brush.TextSecondary}"><TextBlock.Text><MultiBinding Converter="{StaticResource AdventureMemberCount}"><Binding Path="ManagementSelection.Id" /><Binding Path="AdventureMemberCounts" /></MultiBinding></TextBlock.Text></TextBlock>
+     <Grid Grid.Row="2"><TextBlock Text="Select an Adventure to preview its characters." Foreground="{DynamicResource Brush.TextSecondary}" TextAlignment="Center" TextWrapping="Wrap" HorizontalAlignment="Center" VerticalAlignment="Center" Width="280"><TextBlock.Style><Style TargetType="TextBlock"><Setter Property="Visibility" Value="Collapsed" /><Style.Triggers><DataTrigger Binding="{Binding ManagementSelection}" Value="{x:Null}"><Setter Property="Visibility" Value="Visible" /></DataTrigger></Style.Triggers></Style></TextBlock.Style></TextBlock>
+      <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Focusable="False"><ItemsControl ItemsSource="{Binding PreviewMembers}" AutomationProperties.Name="Adventure member preview"><ItemsControl.ItemTemplate><DataTemplate><Grid MinHeight="100" Margin="0,0,0,8"><Grid.ColumnDefinitions><ColumnDefinition Width="94" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions><local:PortraitThumbnail Width="80" Height="80" IsRoundedSquare="True" CharacterId="{Binding Id}" Portraits="{Binding Portraits, RelativeSource={RelativeSource AncestorType=Window}}" Refresh="{Binding PortraitRefresh, RelativeSource={RelativeSource AncestorType=Window}}" VerticalAlignment="Center" /><StackPanel Grid.Column="1" VerticalAlignment="Center"><TextBlock Text="{Binding Name}" FontFamily="{StaticResource Font.Heading}" FontSize="17" FontWeight="SemiBold" TextWrapping="Wrap" /><TextBlock Text="Incomplete draft" FontSize="13" Foreground="{DynamicResource Brush.TextSecondary}" Margin="0,4,0,0" /></StackPanel></Grid></DataTemplate></ItemsControl.ItemTemplate></ItemsControl></ScrollViewer>
+     </Grid>
+    </Grid></ContentControl>
+   </Grid>
+
+   <Grid x:Name="WelcomeFooter" Width="1512" Height="44" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,834,0,0">
+    <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+     <Button x:Name="WelcomeCreateButton" Click="ShowCreateForm" MinWidth="190" Height="44" AutomationProperties.Name="Create Adventure" Margin="0,0,12,0"><StackPanel Orientation="Horizontal"><Viewbox Width="20" Height="20" Margin="0,0,10,0" IsHitTestVisible="False"><Canvas Width="20" Height="20"><Path Data="M3,4 L17,4 L17,17 L3,17 Z M6,2 L6,6 M14,2 L14,6 M3,8 L17,8 M10,10 L10,15 M7.5,12.5 L12.5,12.5" Stroke="{DynamicResource Brush.Text}" StrokeThickness="1.5" Fill="Transparent" /></Canvas></Viewbox><TextBlock Text="Create Adventure" VerticalAlignment="Center" /></StackPanel></Button>
+     <Button x:Name="WelcomeManageButton" Click="ShowManagement" MinWidth="202" Height="44" AutomationProperties.Name="Manage Adventures"><StackPanel Orientation="Horizontal"><Viewbox Width="20" Height="20" Margin="0,0,10,0" IsHitTestVisible="False"><Canvas Width="20" Height="20"><Ellipse Canvas.Left="5" Canvas.Top="5" Width="4" Height="4" Stroke="{DynamicResource Brush.Text}" StrokeThickness="1.5" /><Ellipse Canvas.Left="12" Canvas.Top="6" Width="4" Height="4" Stroke="{DynamicResource Brush.Text}" StrokeThickness="1.5" /><Path Data="M2,18 C2,13 4,11 7,11 C10,11 12,13 12,18 M10,18 C10,14 12,12 14,12 C17,12 19,14 19,18" Stroke="{DynamicResource Brush.Text}" StrokeThickness="1.5" Fill="Transparent" /></Canvas></Viewbox><TextBlock Text="Manage Adventures" VerticalAlignment="Center" /></StackPanel></Button>
+    </StackPanel>
+    <Button x:Name="WelcomeOpenButton" HorizontalAlignment="Right" Content="Open Adventure" Command="{Binding OpenAdventureCommand}" CommandParameter="{Binding ManagementSelection}" Style="{StaticResource WelcomeOpenButton}"><AutomationProperties.Name><Binding Path="ManagementSelection.Name" StringFormat="Open {0}" TargetNullValue="Open Adventure" FallbackValue="Open Adventure" /></AutomationProperties.Name></Button>
+   </Grid>
+  </Grid>
+
+  <!-- Existing Task 2.7 management workflow, kept behind the dedicated Board A command. -->
+  <Grid x:Name="ManagementRoot" Visibility="Collapsed" MaxWidth="1648" Margin="24" HorizontalAlignment="Center">
+   <Grid.ColumnDefinitions><ColumnDefinition Width="1040" /><ColumnDefinition Width="24" /><ColumnDefinition Width="584" /></Grid.ColumnDefinitions>
+   <ContentControl Style="{StaticResource OrnatePanel}"><Grid><Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="*" /><RowDefinition Height="Auto" /><RowDefinition Height="*" /></Grid.RowDefinitions>
+    <DockPanel><Button DockPanel.Dock="Right" Content="Retry / Refresh" Command="{Binding RefreshAdventuresCommand}" Margin="12,0,0,0" /><Button x:Name="ManagementBackButton" DockPanel.Dock="Left" Content="Back to selection" Click="BackToWelcome" Margin="0,0,12,0" /><TextBlock Text="Manage Adventures" Style="{StaticResource SectionHeading}" VerticalAlignment="Center" /></DockPanel>
+    <TextBlock Grid.Row="1" Text="{Binding AdventureStatus}" TextWrapping="Wrap" Margin="0,12,0,8" />
+    <ListBox Grid.Row="2" Style="{StaticResource ManagementList}" ItemsSource="{Binding Adventures}" SelectedItem="{Binding ManagementSelection, Mode=TwoWay}" AutomationProperties.Name="Adventures"><ListBox.ItemTemplate><DataTemplate><StackPanel Margin="12"><TextBlock Text="{Binding Name}" FontWeight="SemiBold" TextWrapping="Wrap" /><TextBlock FontSize="13" Foreground="{DynamicResource Brush.TextSecondary}" Margin="0,4,0,0"><TextBlock.Text><MultiBinding Converter="{StaticResource AdventureMemberCount}"><Binding Path="Id" /><Binding Path="DataContext.AdventureMemberCounts" RelativeSource="{RelativeSource AncestorType=UserControl}" /></MultiBinding></TextBlock.Text></TextBlock></StackPanel></DataTemplate></ListBox.ItemTemplate></ListBox>
+    <StackPanel Grid.Row="3" Margin="0,16,0,8"><TextBlock Text="Unassigned characters" Style="{StaticResource SectionHeading}" /><TextBlock Text="{Binding UnassignedStatus}" Foreground="{DynamicResource Brush.TextSecondary}" Margin="0,8,0,0" /></StackPanel>
+    <ListBox Grid.Row="4" Style="{StaticResource ManagementList}" ItemsSource="{Binding UnassignedDrafts}" SelectedItem="{Binding SelectedUnassigned, Mode=TwoWay}" AutomationProperties.Name="Unassigned characters"><ListBox.ItemTemplate><DataTemplate><DockPanel Margin="12"><local:PortraitThumbnail DockPanel.Dock="Left" Width="48" Height="48" CharacterId="{Binding Id}" Portraits="{Binding Portraits, RelativeSource={RelativeSource AncestorType=Window}}" Refresh="{Binding PortraitRefresh, RelativeSource={RelativeSource AncestorType=Window}}" Margin="0,0,12,0" /><StackPanel><TextBlock Text="{Binding Name}" FontWeight="SemiBold" TextWrapping="Wrap" /><TextBlock Text="Unassigned · Incomplete draft" FontSize="13" Foreground="{DynamicResource Brush.TextSecondary}" Margin="0,4,0,0" /></StackPanel></DockPanel></DataTemplate></ListBox.ItemTemplate></ListBox>
+   </Grid></ContentControl>
+   <ContentControl Grid.Column="2" Style="{StaticResource OrnatePanel}"><ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Focusable="False"><StackPanel><StackPanel x:Name="ManagementForms"><StackPanel.Style><Style TargetType="StackPanel"><Style.Triggers><DataTrigger Binding="{Binding IsAdventureBusy}" Value="True"><Setter Property="IsEnabled" Value="False" /></DataTrigger><DataTrigger Binding="{Binding HasAdventureConfirmation}" Value="True"><Setter Property="IsEnabled" Value="False" /></DataTrigger></Style.Triggers></Style></StackPanel.Style>
+    <TextBlock Text="{Binding ManagementSelection.Name, TargetNullValue=Choose an Adventure, FallbackValue=Choose an Adventure}" Style="{StaticResource SectionHeading}" TextWrapping="Wrap" /><TextBlock Text="Characters in this Adventure" Foreground="{DynamicResource Brush.TextSecondary}" Margin="0,12,0,8" />
+    <ScrollViewer MaxHeight="160" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Focusable="False"><ItemsControl ItemsSource="{Binding PreviewMembers}" AutomationProperties.Name="Adventure member preview"><ItemsControl.ItemTemplate><DataTemplate><Grid Margin="0,4"><Grid.ColumnDefinitions><ColumnDefinition Width="60" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions><local:PortraitThumbnail Width="48" Height="48" CharacterId="{Binding Id}" Portraits="{Binding Portraits, RelativeSource={RelativeSource AncestorType=Window}}" Refresh="{Binding PortraitRefresh, RelativeSource={RelativeSource AncestorType=Window}}" Margin="0,0,12,0" /><StackPanel Grid.Column="1" VerticalAlignment="Center"><TextBlock Text="{Binding Name}" TextWrapping="Wrap" /><TextBlock Text="Incomplete draft" FontSize="13" Foreground="{DynamicResource Brush.TextSecondary}" /></StackPanel><Button Grid.Column="2" Content="Transfer…" Click="TransferMember" Margin="8,0,0,0"><AutomationProperties.Name><Binding Path="Name" StringFormat="Transfer {0}" /></AutomationProperties.Name></Button></Grid></DataTemplate></ItemsControl.ItemTemplate></ItemsControl></ScrollViewer>
+    <Button Content="Open Adventure" Command="{Binding OpenAdventureCommand}" CommandParameter="{Binding ManagementSelection}" Style="{StaticResource OpenAdventureButton}" HorizontalAlignment="Left" Margin="0,16,0,12" /><TextBlock Text="Manage selected Adventure" Style="{StaticResource SectionHeading}" />
+    <Label Target="{Binding ElementName=AdventureName}" Content="Adventure name (required)" Padding="0" Margin="0,12,0,8" /><TextBox x:Name="AdventureName" Text="{Binding AdventureNameInput, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="Adventure name, required" MaxLength="80" /><TextBlock Text="Use 1–80 characters. Rename changes only the selected Adventure." Foreground="{DynamicResource Brush.TextSecondary}" FontSize="13" Margin="0,8,0,12" />
+    <WrapPanel><Button Content="Rename" Style="{StaticResource RequiresAdventure}" Command="{Binding RenameAdventureCommand}" Margin="0,0,12,8" /><Button Content="Delete Adventure…" Style="{StaticResource RequiresAdventure}" Command="{Binding RequestDeleteAdventureCommand}" Margin="0,0,0,8" /></WrapPanel>
+    <Border Height="1" Background="{DynamicResource Brush.Divider}" Margin="0,16" /><Button Content="Create Adventure…" Click="ShowCreateForm" HorizontalAlignment="Left" />
+    <Border Height="1" Background="{DynamicResource Brush.Divider}" Margin="0,16" /><TextBlock Text="Assign unassigned character" Style="{StaticResource SectionHeading}" /><TextBlock Text="Select an unassigned character and destination Adventure, then review the assignment." Foreground="{DynamicResource Brush.TextSecondary}" Margin="0,12" /><Button Content="Assign Adventure…" Style="{StaticResource AssignAdventureButton}" Command="{Binding RequestAssignCharacterCommand}" HorizontalAlignment="Left" />
+    </StackPanel>
+    <Border Visibility="{Binding HasAdventureConfirmation, Converter={StaticResource BooleanVisibility}}" BorderBrush="{DynamicResource Brush.Brass}" BorderThickness="1" Padding="16" CornerRadius="4" Margin="0,16,0,0"><StackPanel><TextBlock Text="Review change" Style="{StaticResource SectionHeading}" /><TextBlock x:Name="ConfirmationStatusText" Text="{Binding ConfirmationText}" TextWrapping="Wrap" Margin="0,12" AutomationProperties.Name="Adventure change confirmation" automation:AutomationProperties.LiveSetting="Polite" /><WrapPanel><Button x:Name="CancelConfirmation" Content="Cancel" Command="{Binding CancelAdventureActionCommand}" Margin="0,0,12,8" /><Button Content="{Binding ConfirmationActionLabel, FallbackValue=Confirm change}" Command="{Binding ConfirmAdventureActionCommand}" Margin="0,0,0,8" /></WrapPanel></StackPanel></Border>
+    <TextBox x:Name="RetainedRecovery" Text="{Binding RetainedRecoveryText, Mode=OneWay}" IsReadOnly="True" TextWrapping="Wrap" Foreground="{DynamicResource Brush.Warning}" Margin="0,16,0,0" AutomationProperties.Name="Retained draft recovery" MaxHeight="160"><TextBox.Style><Style TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}"><Style.Triggers><DataTrigger Binding="{Binding RetainedRecoveryText}" Value=""><Setter Property="Visibility" Value="Collapsed" /></DataTrigger><DataTrigger Binding="{Binding RetainedRecoveryText}" Value="{x:Null}"><Setter Property="Visibility" Value="Collapsed" /></DataTrigger></Style.Triggers></Style></TextBox.Style></TextBox>
+   </StackPanel></ScrollViewer></ContentControl>
+  </Grid>
+
+  <!-- Existing atomic create command, presented as an owned ornate overlay. -->
+  <Grid x:Name="CreateOverlay" Visibility="Collapsed" Background="#B0101419">
+   <ContentControl Style="{StaticResource OrnatePanel}" Width="720" MaxHeight="760" HorizontalAlignment="Center" VerticalAlignment="Center"><ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"><StackPanel>
+    <TextBlock Text="Create Adventure with first character" FontFamily="{StaticResource Font.Heading}" FontSize="28" FontWeight="Bold" />
+    <Label Target="{Binding ElementName=NewAdventureName}" Content="New Adventure name (required)" Padding="0" Margin="0,16,0,8" /><TextBox x:Name="NewAdventureName" Text="{Binding NewAdventureNameInput, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="New Adventure name, required" MaxLength="80" />
+    <TextBlock Text="Enter a new draft name, or select an unassigned character in Manage Adventures." Foreground="{DynamicResource Brush.TextSecondary}" Margin="0,12,0,8" />
+    <Label Target="{Binding ElementName=FirstCharacterName}" Content="New character name" Padding="0" Margin="0,4,0,8" /><TextBox x:Name="FirstCharacterName" Text="{Binding FirstCharacterName, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="First character name" MaxLength="80"><TextBox.Style><Style TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}"><Setter Property="IsEnabled" Value="False" /><Style.Triggers><DataTrigger Binding="{Binding SelectedUnassigned}" Value="{x:Null}"><Setter Property="IsEnabled" Value="True" /></DataTrigger></Style.Triggers></Style></TextBox.Style></TextBox>
+    <TextBlock Text="{Binding SelectedUnassigned.Name, StringFormat=First-character choice: assign {0}, TargetNullValue=First-character choice: create a new draft, FallbackValue=First-character choice: create a new draft}" TextWrapping="Wrap" Margin="0,12,0,8" /><Button Content="Use a new draft instead" Click="ClearUnassigned" HorizontalAlignment="Left" Margin="0,0,0,16" /><TextBlock Text="{Binding AdventureStatus}" Foreground="{DynamicResource Brush.TextSecondary}" TextWrapping="Wrap" Margin="0,0,0,12" />
+    <WrapPanel HorizontalAlignment="Right"><Button Content="Cancel" Click="HideCreateForm" Margin="0,0,12,0" /><Button Content="Create Adventure" Command="{Binding CreateAdventureCommand}" Style="{StaticResource PrimaryButton}" /></WrapPanel>
+   </StackPanel></ScrollViewer></ContentControl>
   </Grid>
  </Grid>
 </UserControl>

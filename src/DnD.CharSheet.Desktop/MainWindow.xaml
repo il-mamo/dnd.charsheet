@@ -51,7 +51,7 @@
     <Border Grid.Row="2" Background="{DynamicResource Brush.TopBarRule}"/>
    </Grid>
   </Border>
-  <Border Grid.Row="1" Padding="24,12" BorderBrush="{DynamicResource Brush.Brass}" BorderThickness="0,0,0,1">
+  <Border Grid.Row="1" Padding="24,12" BorderBrush="{DynamicResource Brush.Brass}" BorderThickness="0,0,0,1" Visibility="{Binding ShowCharacterLibrary, Converter={StaticResource BooleanVisibility}}">
    <Grid>
     <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="720"/></Grid.ColumnDefinitions>
     <StackPanel VerticalAlignment="Center">
@@ -155,6 +155,6 @@
     </DockPanel>
    </Border>
   </Grid>
-  <local:AdventurePanel x:Name="AdventureRoster" Focusable="True" Grid.Row="2" Margin="24" Visibility="{Binding ShowAdventurePanel, Converter={StaticResource BooleanVisibility}}"/>
+  <local:AdventurePanel x:Name="AdventureRoster" Focusable="True" Grid.Row="1" Grid.RowSpan="2" Visibility="{Binding ShowAdventurePanel, Converter={StaticResource BooleanVisibility}}"/>
  </Grid>
 </Window>
