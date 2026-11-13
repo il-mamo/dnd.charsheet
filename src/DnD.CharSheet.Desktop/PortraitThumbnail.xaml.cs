@@ -11,17 +11,28 @@ public partial class PortraitThumbnail : UserControl
     public static readonly DependencyProperty CharacterIdProperty = DependencyProperty.Register(nameof(CharacterId), typeof(CharacterId), typeof(PortraitThumbnail), new PropertyMetadata(null, Changed));
     public static readonly DependencyProperty PortraitsProperty = DependencyProperty.Register(nameof(Portraits), typeof(ICharacterPortraits), typeof(PortraitThumbnail), new PropertyMetadata(null, Changed));
     public static readonly DependencyProperty RefreshProperty = DependencyProperty.Register(nameof(Refresh), typeof(int), typeof(PortraitThumbnail), new PropertyMetadata(0, Changed));
+    public static readonly DependencyProperty IsRoundedSquareProperty = DependencyProperty.Register(nameof(IsRoundedSquare), typeof(bool), typeof(PortraitThumbnail), new PropertyMetadata(false, PresentationChanged));
     public CharacterId? CharacterId { get => (CharacterId?)GetValue(CharacterIdProperty); set => SetValue(CharacterIdProperty, value); }
     public ICharacterPortraits? Portraits { get => (ICharacterPortraits?)GetValue(PortraitsProperty); set => SetValue(PortraitsProperty, value); }
     public int Refresh { get => (int)GetValue(RefreshProperty); set => SetValue(RefreshProperty, value); }
+    public bool IsRoundedSquare { get => (bool)GetValue(IsRoundedSquareProperty); set => SetValue(IsRoundedSquareProperty, value); }
     private int generation;
     public PortraitThumbnail()
     {
         InitializeComponent();
         Loaded += (_, _) => Reload();
-        SizeChanged += (_, _) => ((Grid)Content).Clip = new EllipseGeometry(new Point(ActualWidth / 2, ActualHeight / 2), ActualWidth / 2, ActualHeight / 2);
+        SizeChanged += (_, _) => UpdatePresentation();
     }
     private static void Changed(DependencyObject sender, DependencyPropertyChangedEventArgs args) => ((PortraitThumbnail)sender).Reload();
+    private static void PresentationChanged(DependencyObject sender, DependencyPropertyChangedEventArgs args) => ((PortraitThumbnail)sender).UpdatePresentation();
+    private void UpdatePresentation()
+    {
+        if (ActualWidth <= 0 || ActualHeight <= 0) return;
+        PortraitFrame.Clip = IsRoundedSquare
+            ? new RectangleGeometry(new Rect(0, 0, ActualWidth, ActualHeight), 8, 8)
+            : new EllipseGeometry(new Point(ActualWidth / 2, ActualHeight / 2), ActualWidth / 2, ActualHeight / 2);
+        SquareBorder.Visibility = SquareInset.Visibility = IsRoundedSquare ? Visibility.Visible : Visibility.Collapsed;
+    }
     private async void Reload()
     {
         if (!IsLoaded) return;

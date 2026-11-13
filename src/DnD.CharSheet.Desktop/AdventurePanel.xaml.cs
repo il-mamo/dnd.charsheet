@@ -13,11 +13,21 @@ public partial class AdventurePanel : UserControl
 {
     private INotifyPropertyChanged? observed;
     private INotifyCollectionChanged? observedAdventures;
+    private FrameworkElement? createInvoker;
+    private FrameworkElement? managementInvoker;
+    private string selectionSearch = "";
 
     public AdventurePanel()
     {
         InitializeComponent();
-        IsVisibleChanged += (_, _) => { if (IsVisible) Dispatcher.BeginInvoke(new Action(() => AdventureSearch.Focus())); };
+        IsVisibleChanged += (_, _) =>
+        {
+            if (!IsVisible) return;
+            WelcomeRoot.Visibility = Visibility.Visible;
+            ManagementRoot.Visibility = Visibility.Collapsed;
+            CreateOverlay.Visibility = Visibility.Collapsed;
+            Dispatcher.BeginInvoke(new Action(() => AdventureSearch.Focus()));
+        };
         DataContextChanged += (_, _) =>
         {
             if (observed is not null) observed.PropertyChanged -= ViewModelChanged;
@@ -38,10 +48,14 @@ public partial class AdventurePanel : UserControl
                     AdventureSearch.Focus();
                     e.Handled = true;
                 }
-                else if (CreateForm.IsVisible)
+                else if (CreateOverlay.IsVisible)
                 {
-                    CreateForm.Visibility = Visibility.Collapsed;
-                    AdventureSearch.Focus();
+                    HideCreateForm(this, new RoutedEventArgs());
+                    e.Handled = true;
+                }
+                else if (ManagementRoot.IsVisible)
+                {
+                    BackToWelcome(this, new RoutedEventArgs());
                     e.Handled = true;
                 }
             }
@@ -57,7 +71,11 @@ public partial class AdventurePanel : UserControl
             DataContext is ShellViewModel { HasAdventureConfirmation: true })
             Dispatcher.BeginInvoke(new Action(() => { CancelConfirmation.Focus(); CancelConfirmation.BringIntoView(); }));
         if (e.PropertyName == nameof(ShellViewModel.AdventureStatus))
+        {
             Announce(AdventureStatusText);
+            if (DataContext is ShellViewModel { HasFailed: false } shell && shell.Adventures.Count == 0 && WelcomeRoot.IsVisible)
+                Dispatcher.BeginInvoke(new Action(() => WelcomeCreateButton.Focus()));
+        }
         if (e.PropertyName == nameof(ShellViewModel.ConfirmationText))
             Announce(ConfirmationStatusText);
     }
@@ -94,14 +112,38 @@ public partial class AdventurePanel : UserControl
 
     private void ShowCreateForm(object sender, RoutedEventArgs e)
     {
-        CreateForm.Visibility = Visibility.Visible;
+        createInvoker = sender as FrameworkElement;
+        CreateOverlay.Visibility = Visibility.Visible;
         NewAdventureName.Focus();
     }
 
     private void HideCreateForm(object sender, RoutedEventArgs e)
     {
-        CreateForm.Visibility = Visibility.Collapsed;
-        AdventureSearch.Focus();
+        CreateOverlay.Visibility = Visibility.Collapsed;
+        if (createInvoker?.IsVisible == true) createInvoker.Focus();
+        else if (ManagementRoot.IsVisible) ManagementBackButton.Focus();
+        else AdventureSearch.Focus();
+    }
+
+    private void ShowManagement(object sender, RoutedEventArgs e)
+    {
+        managementInvoker = sender as FrameworkElement;
+        selectionSearch = AdventureSearch.Text;
+        AdventureSearch.Clear();
+        UpdateSearch();
+        WelcomeRoot.Visibility = Visibility.Collapsed;
+        ManagementRoot.Visibility = Visibility.Visible;
+        Dispatcher.BeginInvoke(new Action(() => ManagementBackButton.Focus()));
+    }
+
+    private void BackToWelcome(object sender, RoutedEventArgs e)
+    {
+        ManagementRoot.Visibility = Visibility.Collapsed;
+        WelcomeRoot.Visibility = Visibility.Visible;
+        AdventureSearch.Text = selectionSearch;
+        UpdateSearch();
+        if (managementInvoker?.IsVisible == true) managementInvoker.Focus();
+        else AdventureSearch.Focus();
     }
 }
 
